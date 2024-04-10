@@ -12,7 +12,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/text"
+        android:text="메인화면"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -29,11 +29,18 @@
         <!-- 텍스트 결과를 표시할 텍스트 뷰 -->
         <TextView
                 android:id="@+id/textViewResult"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text=""
                 android:textSize="18sp"/>
+
+        <Button
+            android:id="@+id/buttonToNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="이미지선택"
+            android:layout_gravity="center_horizontal"/>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 </layout>

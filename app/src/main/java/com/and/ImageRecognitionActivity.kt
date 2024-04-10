@@ -1,23 +1,34 @@
 package com.and
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
+import com.and.databinding.ActivityImageRecognitionBinding
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
+import java.io.File
 import java.io.IOException
-import com.and.databinding.ActivityMainBinding // 뷰 바인딩을 import
-class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding : ActivityMainBinding// 뷰 바인딩을 사용할 변수를 선언
+class ImageRecognitionActivity : AppCompatActivity() {
+    private lateinit var binding : ActivityImageRecognitionBinding// 뷰 바인딩을 사용할 변수를 선언
+//    private val button: Button by lazy {
+//        findViewById(R.id.button1)
+//    }
+//
+//    private val imageView: ImageView by lazy {
+//        findViewById(R.id.imageView1)
+//    }
 
+    private lateinit var cameraActivityResult: ActivityResultLauncher<Intent>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        binding = ActivityMainBinding.inflate(layoutInflater) // 뷰 바인딩을 초기화
+//        setContentView(R.layout.activity_image_recognition)
+        binding = ActivityImageRecognitionBinding.inflate(layoutInflater) // 뷰 바인딩을 초기화
         setContentView(binding.root) // 액티비티의 컨텐츠 뷰를 뷰 바인딩의 루트 뷰로 설정
 
         // 이미지 선택 버튼 클릭 시 갤러리 앱 열기
@@ -26,11 +37,38 @@ class MainActivity : AppCompatActivity() {
             intent.type = "image/*"
             pickImage.launch(intent)
         }
-        binding.buttonToNext.setOnClickListener {
-            val intent = Intent(this@MainActivity, ImageRecognitionActivity::class.java)
-            startActivity(intent)
+        // 카메라 버튼 클릭시
+        binding.buttonCamera.setOnClickListener {
+            val intent = Intent(this@ImageRecognitionActivity, CameraActivity::class.java)
+                intent.putExtra("extension","jpg")
+                intent.putExtra("ratio", AspectRatio.RATIO_16_9)
+            cameraActivityResult.launch(intent)//카메라로 찍고
+            //바로 텍스트 인식
+            //pickImage.launch(intent)
+        }
+
+        mainCameraActivityResult()
+    }
+
+    private fun mainCameraActivityResult(){
+
+        cameraActivityResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+            if(it.resultCode == 200){
+                it.data?.let { intent ->
+                    intent.getStringExtra("path")?.let { path ->
+                        binding.imageView.run {
+                            setImageBitmap(urlToBitmap(File(path).absolutePath))
+                        }
+                    }
+                }
+            }
         }
     }
+
+
+
+    private fun urlToBitmap(url: String) = BitmapFactory.decodeFile(url)
+
     //ml kit 사용한 text 인식
     private fun recognizeText(image: InputImage, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
         try {
@@ -68,5 +106,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
 
 }
