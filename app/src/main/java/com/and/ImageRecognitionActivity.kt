@@ -24,9 +24,6 @@ class ImageRecognitionActivity : AppCompatActivity() {
 //    private val imageView: ImageView by lazy {
 //        findViewById(R.id.imageView1)
 //    }
-companion object {
-    private const val CAMERA_REQUEST_CODE = 100 // 원하는 숫자로 설정 가능
-}
 
     private lateinit var cameraActivityResult: ActivityResultLauncher<Intent>
     override fun onCreate(savedInstanceState: Bundle?) {
