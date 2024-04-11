@@ -2,6 +2,7 @@ package com.and
 
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,6 +24,9 @@ class ImageRecognitionActivity : AppCompatActivity() {
 //    private val imageView: ImageView by lazy {
 //        findViewById(R.id.imageView1)
 //    }
+companion object {
+    private const val CAMERA_REQUEST_CODE = 100 // 원하는 숫자로 설정 가능
+}
 
     private lateinit var cameraActivityResult: ActivityResultLauncher<Intent>
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,25 +47,38 @@ class ImageRecognitionActivity : AppCompatActivity() {
                 intent.putExtra("extension","jpg")
                 intent.putExtra("ratio", AspectRatio.RATIO_16_9)
             cameraActivityResult.launch(intent)//카메라로 찍고
-            //바로 텍스트 인식
-            //pickImage.launch(intent)
+
+
         }
 
         mainCameraActivityResult()
     }
 
-    private fun mainCameraActivityResult(){
 
-        cameraActivityResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
-            if(it.resultCode == 200){
-                it.data?.let { intent ->
+    private fun mainCameraActivityResult() {
+        cameraActivityResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                result.data?.let { intent ->
                     intent.getStringExtra("path")?.let { path ->
-                        binding.imageView.run {
+                        binding.imageView.run {//찍은 사진 image 뷰로 보여줌
                             setImageBitmap(urlToBitmap(File(path).absolutePath))
                         }
+                        val image = InputImage.fromFilePath(this, Uri.parse(path))
+                        recognizeText(//찍은 사진 text 인식
+                            image,
+                            onSuccess = { resultText ->
+                                // 텍스트 인식 성공 시 결과를 화면에 표시
+                                binding.textViewResult.text = resultText
+                            },
+                            onFailure = { exception ->
+                                // 텍스트 인식 실패 시 메시지 출력
+                                binding.textViewResult.text = "Text recognition failed with exception: $exception"
+                            }
+                        )
                     }
                 }
             }
+
         }
     }
 
@@ -106,6 +123,7 @@ class ImageRecognitionActivity : AppCompatActivity() {
             }
         }
     }
+
 
 
 }

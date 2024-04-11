@@ -9,8 +9,6 @@
             android:orientation="vertical"
             tools:context=".ImageRecognitionActivity">
 
-
-
         <!-- 이미지 선택 버튼 -->
         <Button
                 android:id="@+id/buttonPickImage"
@@ -19,14 +17,6 @@
                 android:text="@string/pick_image"
                 android:layout_gravity="center_horizontal"/>
 
-        <!-- 텍스트 결과를 표시할 텍스트 뷰 -->
-        <TextView
-                android:id="@+id/textViewResult"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20sp"
-                android:text=""
-                android:textSize="20sp"/>
         <!--CameraX-->
         <Button
                 android:id="@+id/buttonCamera"
@@ -36,14 +26,25 @@
                 app:layout_constraintTop_toBottomOf="@id/imageView"
                 app:layout_constraintBottom_toBottomOf="parent" tools:ignore="HardcodedText"/>
 
+        <!-- 선택한 이미지 출력 뷰 -->
         <ImageView
                 android:id="@+id/imageView"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
 
-                app:layout_constraintBottom_toTopOf="@+id/button_camera"
-                app:layout_constraintTop_toTopOf="parent" android:contentDescription="TODO"
+                app:layout_constraintBottom_toTopOf="@id/buttonCamera"
+                app:layout_constraintTop_toTopOf="@id/buttonCamera" android:contentDescription="TODO"
                 tools:ignore="ContentDescription,HardcodedText"/>
+
+        <!-- 텍스트 인식 결과를 표시할 텍스트 뷰 -->
+        <TextView
+                android:id="@+id/textViewResult"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30sp"
+                android:text=""
+                android:textSize="20sp"/>
+
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 </layout>

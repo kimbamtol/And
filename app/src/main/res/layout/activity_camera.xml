@@ -9,15 +9,13 @@
             android:orientation="vertical"
             tools:context=".CameraActivity">
 
-
-
-
+    <!--camera preview -->
     <androidx.camera.view.PreviewView
             android:id="@+id/viewFinder"
             android:layout_width="match_parent"
             android:layout_height="600dp"
             android:visibility="visible"/>
-
+    <!--촬영 버튼-->
     <Button
             android:id="@+id/cameraCaptureButton"
             android:layout_width="100dp"

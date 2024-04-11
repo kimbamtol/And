@@ -33,7 +33,7 @@ class CameraActivity : AppCompatActivity() {
     private var imageAnalysis: ImageAnalysis? = null
     private var animFlag: Int = 0
 
-    private val cameraButton by lazy{
+    private val cameraButton by lazy{// cameraButton 초기화
         binding.cameraCaptureButton
     }
 
@@ -50,7 +50,7 @@ class CameraActivity : AppCompatActivity() {
                 if(orientation == -1){
                     return
                 }
-                val rotation = when (orientation) {
+                val rotation = when (orientation) {//회전 각도 조절
                     in 45 until 135 -> {
                         Surface.ROTATION_270
                     }
@@ -86,14 +86,9 @@ class CameraActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-//        setContentView(R.layout.camera)
-
-
-
         binding = ActivityCameraBinding.inflate(layoutInflater) // 뷰 바인딩을 초기화
         setContentView(binding.root) // 액티비티의 컨텐츠 뷰를 뷰 바인딩의 루트 뷰로 설정
-//        cameraButton=binding.cameraCaptureButton
-        // cameraButton 초기화
+        //ImageRecognitionActivity 에서 넘어온 값
         intent.getStringExtra("extension")?.let {
             extension = it
         }
@@ -101,10 +96,10 @@ class CameraActivity : AppCompatActivity() {
             ratio = it
         }
 
-        if(allPermissionsGranted()){
-            startCamera()
-        }else{
-            ActivityCompat.requestPermissions(
+        if(allPermissionsGranted()){//촬영 권한이 있다면
+            startCamera()//camera setting
+        }else{//촬영 권한이 없다면
+            ActivityCompat.requestPermissions(//권한 요청
                 this@CameraActivity,
                 REQUIRED_PERMISSIONS,
                 REQUEST_CODE_PERMISSIONS
@@ -112,8 +107,8 @@ class CameraActivity : AppCompatActivity() {
         }
 
         cameraButton.setOnClickListener {
-            Log.d(TAG,"클릭했")
-            takePhoto()
+            Log.d(TAG,"클릭했음")
+            takePhoto()//촬영
 
         }
 
@@ -127,8 +122,8 @@ class CameraActivity : AppCompatActivity() {
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            imageAnalysis = ImageAnalysis.Builder().build()
-//                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            imageAnalysis = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build()
 //                .build().apply {
 //                    setAnalyzer(cameraExecutor, { image ->
 //                        val rotationDegrees = image.imageInfo.rotationDegrees
@@ -163,7 +158,7 @@ class CameraActivity : AppCompatActivity() {
     }
     private fun takePhoto(){
         val imageCapture = imageCapture ?: return
-        val photoFile = File(
+        val photoFile = File(//file 저장
             outputDirectory,
             SimpleDateFormat(FILENAME_FORMAT, Locale.KOREA)
                 .format(System.currentTimeMillis()) + ".$extension"
@@ -189,9 +184,10 @@ class CameraActivity : AppCompatActivity() {
                     Toast.makeText(this@CameraActivity, "저장되었습니다", Toast.LENGTH_SHORT).show()
                     Log.d(TAG, "사진이 정상 촬영 됐습니다. ${saveUri.path}")
 
-                    val intent = Intent(this@CameraActivity, ImageRecognitionActivity::class.java)
-                    intent.putExtra("path", saveUri.path)
-                    setResult(200, intent)
+//                    val intent = Intent(this@CameraActivity, ImageRecognitionActivity::class.java)
+                    val intent = Intent()
+                    intent.putExtra("path", saveUri.toString()) // Uri를 String으로 전달
+                    setResult(RESULT_OK, intent) // 결과 코드를 설정하고 Intent를 추가합니다.
                     finish()
 
                 }

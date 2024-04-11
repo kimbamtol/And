@@ -18,28 +18,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- 이미지 선택 버튼 -->
-        <Button
-                android:id="@+id/buttonPickImage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/pick_image"
-                android:layout_gravity="center_horizontal"/>
-
-        <!-- 텍스트 결과를 표시할 텍스트 뷰 -->
-        <TextView
-                android:id="@+id/textViewResult"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text=""
-                android:textSize="18sp"/>
-
+        <!--move to ImageRecognition Activity-->
         <Button
             android:id="@+id/buttonToNext"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="이미지선택"
+            android:text="이미지인식"
             android:layout_gravity="center_horizontal"/>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
