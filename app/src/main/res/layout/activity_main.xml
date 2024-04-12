@@ -28,6 +28,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+
+        <!--move to ImageRecognition Activity-->
+
+        <Button
+            android:id="@+id/buttonToNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="이미지인식"
+            android:layout_gravity="center_horizontal"/>
         <Button
             android:id="@+id/buttonOpenMLActivity"
             android:layout_width="wrap_content"

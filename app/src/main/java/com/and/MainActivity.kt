@@ -4,18 +4,33 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.AspectRatio
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
+import java.io.IOException
+import com.and.databinding.ActivityMainBinding // 뷰 바인딩을 import
 import android.view.View
 import androidx.recyclerview.widget.DefaultItemAnimator
 import com.and.adpater.CategoryListAdapter
-import com.and.databinding.ActivityMainBinding
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding : ActivityMainBinding// 뷰 바인딩을 사용할 변수를 선언
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+          
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        // move to ImageRecognitionActivity
+        binding.buttonToNext.setOnClickListener {
+            val intent = Intent(this@MainActivity, ImageRecognitionActivity::class.java)
+            startActivity(intent)
         binding.apply {
             val categoryList = mutableListOf("Mon", "Tues")
             val adapter = CategoryListAdapter(categoryList)
