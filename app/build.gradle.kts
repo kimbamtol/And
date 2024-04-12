@@ -39,18 +39,33 @@ android {
     buildFeatures {
         //noinspection DataBindingWithoutKapt
         dataBinding =true // 데이터 바인딩 활성화
+        viewBinding = true
     }
 }
 
 dependencies {
-
     implementation("androidx.core:core-ktx:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    
     implementation("androidx.camera:camera-core:1.3.2")
     implementation("androidx.camera:camera-view:1.3.2")
     implementation("androidx.camera:camera-lifecycle:1.3.2")
+    implementation("androidx.activity:activity:1.8.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
+    
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+    testImplementation(kotlin("test-junit"))
+    implementation("org.jsoup:jsoup:1.14.1")
+    implementation("androidx.activity:activity:1.8.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+    testImplementation(kotlin("test-junit"))
+    implementation("org.jsoup:jsoup:1.14.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
