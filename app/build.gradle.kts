@@ -49,14 +49,12 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    
     implementation("androidx.camera:camera-core:1.3.2")
     implementation("androidx.camera:camera-view:1.3.2")
     implementation("androidx.camera:camera-lifecycle:1.3.2")
     implementation("androidx.activity:activity:1.8.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
-    
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     testImplementation(kotlin("test-junit"))
     implementation("org.jsoup:jsoup:1.14.1")
@@ -85,5 +83,4 @@ dependencies {
     implementation("androidx.camera:camera-view:1.0.0-alpha31")
     // If you want to additionally use the CameraX Extensions library
     implementation("androidx.camera:camera-extensions:1.0.0-alpha31")
-
     }
