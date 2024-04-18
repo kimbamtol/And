@@ -62,6 +62,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
+    implementation("androidx.webkit:webkit:1.10.0")
+
     testImplementation(kotlin("test-junit"))
     implementation("org.jsoup:jsoup:1.14.1")
     testImplementation("junit:junit:4.13.2")
