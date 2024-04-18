@@ -14,7 +14,7 @@ class DetailListAdapter(private val detailList: List<String>): RecyclerView.Adap
         fun bind(name: String) {
             binding.apply {
                 detailName.text = name
-                if (detailName.text == "aaaaaa") {
+                if (detailName.text == "a") {
                     strikethrough.visibility = View.VISIBLE
                     substrikethrough.visibility = View.VISIBLE
                 }
