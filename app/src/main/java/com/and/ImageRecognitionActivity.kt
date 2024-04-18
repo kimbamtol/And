@@ -32,13 +32,12 @@ class ImageRecognitionActivity : AppCompatActivity() {
         binding.buttonCamera.setOnClickListener { startCameraActivity() }
     }
 
+    //launcher 들의 집합
     private fun setupActivityLaunchers() {
         pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 val imageUri = result.data?.data
                 imageUri?.let { uri -> launchImageCrop(uri) }
-            } else {
-                // 이미지 촬영이 실패한 경우에 대한 처리
             }
         }
 
@@ -55,23 +54,27 @@ class ImageRecognitionActivity : AppCompatActivity() {
         }
     }
 
+    //이미지 선택
     private fun pickImage() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
         pickImageLauncher.launch(intent)
     }
 
+    //CameraActivity 실행
     private fun startCameraActivity() {
         val intent = Intent(this, CameraActivity::class.java)
         intent.putExtra("extension", "jpg")
         cameraLauncher.launch(intent)
     }
 
+    // 이미지 크롭 launcher
     private fun launchImageCrop(uri: Uri) {
         val options = CropImageContractOptions(uri, CropImageOptions())
         cropImageLauncher.launch(options)
     }
 
+    // text 인식
     private fun performTextRecognition(uri: Uri) {
         val image = InputImage.fromFilePath(this, uri)
         val recognizer = TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
