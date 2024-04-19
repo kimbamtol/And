@@ -1,57 +1,57 @@
 package com.and.adpater
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
 import com.and.DrugDataModel
-import com.and.databinding.CategorylistItemBinding
+import com.and.databinding.SelectcategorylistItemBinding
 
-class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): RecyclerView.Adapter<CategoryListAdapter.CategoryListViewHodlder>(),
+class SelectCategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): RecyclerView.Adapter<SelectCategoryListAdapter.SelectCategoryViewHodlder>(),
     Filterable {
-    fun interface OnClickListener {
-        fun onSettingClick(drugDataModel: DrugDataModel)
+
+    fun interface OnItemClickListener {
+        fun onItemClick(category: DrugDataModel)
     }
+
+    var onItemClickListener: OnItemClickListener? = null
 
     private var drugDataModels: List<DrugDataModel> = drugDataModelList
-    var onClickListener: OnClickListener? = null
+    private val selectedItems = mutableListOf<DrugDataModel>()
 
-    inner class CategoryListViewHodlder(private val binding: CategorylistItemBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class SelectCategoryViewHodlder(private val binding: SelectcategorylistItemBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             binding.apply {
-                root.setOnClickListener {
-                    if (detailRecyclerView.visibility == View.GONE) {
-                        detailRecyclerView.visibility = View.VISIBLE
-                    } else {
-                        detailRecyclerView.visibility = View.GONE
-                    }
+                binding.root.setOnClickListener {
+                    onItemClickListener?.onItemClick(drugDataModels[bindingAdapterPosition])
+                    toggleSelection(drugDataModels[bindingAdapterPosition])
                 }
             }
         }
+
         fun bind(drugDataModel: DrugDataModel) {
             binding.apply {
-                categoryName.text = drugDataModel.category
-                val adapter = DetailListAdapter(drugDataModel.details)
-                detailRecyclerView.adapter = adapter
-
-                setting.setOnClickListener {
-                    onClickListener?.onSettingClick(drugDataModel)
+                selectCategoryName.text = drugDataModel.category
+                checkbox.setOnClickListener {
+                    onItemClickListener?.onItemClick(drugDataModels[bindingAdapterPosition])
+                    toggleSelection(drugDataModels[bindingAdapterPosition])
                 }
+                checkbox.isChecked = selectedItems.contains(drugDataModels[bindingAdapterPosition])
             }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryListViewHodlder {
-        val binding = CategorylistItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return CategoryListViewHodlder(binding)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SelectCategoryViewHodlder {
+        val binding = SelectcategorylistItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return SelectCategoryViewHodlder(binding)
     }
 
     override fun getItemCount(): Int = drugDataModels.size
 
-    override fun onBindViewHolder(holder: CategoryListViewHodlder, position: Int) {
+    override fun onBindViewHolder(holder: SelectCategoryViewHodlder, position: Int) {
         holder.bind(drugDataModels[position])
     }
 
@@ -82,5 +82,14 @@ class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): R
                 notifyDataSetChanged()
             }
         }
+    }
+
+    private fun toggleSelection(category: DrugDataModel) {
+        if (selectedItems.contains(category)) {
+            selectedItems.remove(category)
+        } else {
+            selectedItems.add(category)
+        }
+        notifyItemRangeChanged(0, itemCount, null)
     }
 }

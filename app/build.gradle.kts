@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-parcelize")
 }
 
 
@@ -58,17 +59,19 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
     testImplementation(kotlin("test-junit"))
     implementation("org.jsoup:jsoup:1.14.1")
     implementation("androidx.activity:activity:1.8.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
+    implementation("androidx.webkit:webkit:1.10.0")
+
     testImplementation(kotlin("test-junit"))
     implementation("org.jsoup:jsoup:1.14.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    implementation ("com.kakao.sdk:v2-user:2.20.1") // 카카오 로그인 API 모듈
 
     //mlkit
     //implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.1' <- Cannot recognize Korean

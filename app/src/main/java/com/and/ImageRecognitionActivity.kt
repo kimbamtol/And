@@ -17,6 +17,8 @@ class ImageRecognitionActivity : AppCompatActivity() {
     private lateinit var cameraLauncher: ActivityResultLauncher<Intent>
     private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
     private lateinit var cropImageLauncher: ActivityResultLauncher<CropImageContractOptions>
+    private lateinit var cameraActivityResult: ActivityResultLauncher<Intent>
+    private val recognizedTexts: MutableList<String> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,9 +32,9 @@ class ImageRecognitionActivity : AppCompatActivity() {
     private fun setupButtonListeners() {
         binding.buttonPickImage.setOnClickListener { pickImage() }
         binding.buttonCamera.setOnClickListener { startCameraActivity() }
+        binding.buttonStartCrawling.setOnClickListener { startCrawlingActivity() }
     }
 
-    //launcher 들의 집합
     private fun setupActivityLaunchers() {
         pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
@@ -54,37 +56,40 @@ class ImageRecognitionActivity : AppCompatActivity() {
         }
     }
 
-    //이미지 선택
     private fun pickImage() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
         pickImageLauncher.launch(intent)
     }
 
-    //CameraActivity 실행
     private fun startCameraActivity() {
         val intent = Intent(this, CameraActivity::class.java)
         intent.putExtra("extension", "jpg")
         cameraLauncher.launch(intent)
     }
 
-    // 이미지 크롭 launcher
     private fun launchImageCrop(uri: Uri) {
         val options = CropImageContractOptions(uri, CropImageOptions())
         cropImageLauncher.launch(options)
     }
 
-    // text 인식
     private fun performTextRecognition(uri: Uri) {
         val image = InputImage.fromFilePath(this, uri)
         val recognizer = TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
         recognizer.process(image)
             .addOnSuccessListener { visionText ->
+                recognizedTexts.add(visionText.text)
                 binding.textViewResult.text = visionText.text
                 binding.imageView.setImageURI(uri)
             }
             .addOnFailureListener { exception ->
                 binding.textViewResult.text = "Text recognition failed with exception: $exception"
             }
+    }
+
+    private fun startCrawlingActivity() {
+        val intent = Intent(this, Crawling::class.java)
+        intent.putStringArrayListExtra("recognizedTexts", ArrayList(recognizedTexts))
+        startActivity(intent)
     }
 }
