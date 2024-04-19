@@ -4,6 +4,7 @@
     <string name="text">text인식</string>
     <string name="camera">Camera</string>
     <string name="take_photo">Take Photo</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="kakao_app_key">821b68e0219f434c6da893e99d4c4d60</string>
+    <string name="kakao_app_key2">kakao821b68e0219f434c6da893e99d4c4d60</string>
 </resources>

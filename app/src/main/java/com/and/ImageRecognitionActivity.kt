@@ -26,6 +26,7 @@ class ImageRecognitionActivity : AppCompatActivity() {
 //    }
 
     private lateinit var cameraActivityResult: ActivityResultLauncher<Intent>
+    private val recognizedTexts: MutableList<String> = mutableListOf() // 인식된 텍스트를 저장할 리스트
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        setContentView(R.layout.activity_image_recognition)
@@ -46,6 +47,10 @@ class ImageRecognitionActivity : AppCompatActivity() {
             cameraActivityResult.launch(intent)//카메라로 찍고
 
 
+        }
+
+        binding.buttonStartCrawling.setOnClickListener {
+            startCrawlingActivity()
         }
 
         mainCameraActivityResult()
@@ -110,6 +115,8 @@ class ImageRecognitionActivity : AppCompatActivity() {
                 val image: InputImage = InputImage.fromFilePath(this, it)
                 recognizeText(image,
                     onSuccess = { resultText ->
+                        // 성공시 결과를 리스트에 저장
+                        recognizedTexts.add(resultText)
                         // 텍스트 인식 성공 시 결과를 화면에 표시
                         binding.textViewResult.text = resultText
                     },
@@ -120,7 +127,11 @@ class ImageRecognitionActivity : AppCompatActivity() {
             }
         }
     }
-
+    private fun startCrawlingActivity() {
+        val intent = Intent(this, Crawling::class.java)
+        intent.putStringArrayListExtra("recognizedTexts", ArrayList(recognizedTexts))
+        startActivity(intent)
+    }
 
 
 }
