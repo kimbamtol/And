@@ -1,9 +1,7 @@
-// build.gradle 파일
-
 repositories {
-    google() // Google Maven 저장소 추가
+    google() // Google Maven repository added
     mavenCentral()
-    maven { url = uri("https://jitpack.io") } // JitPack 저장소 추가
+    maven { url = uri("https://jitpack.io") } // JitPack repository added}
 }
 
 plugins {
@@ -13,18 +11,18 @@ plugins {
 
 buildscript {
     repositories {
-        google() // 플러그인을 위한 Google Maven 저장소 추가
+        google() // Plugin for Google Maven repository added
         mavenCentral()
-        maven { url = uri("https://jitpack.io") } // JitPack 저장소 추가
+        maven { url = uri("https://jitpack.io") } // JitPack repository added
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.2.2") // 예시로 안드로이드 플러그인 버전 8.2.0 추가
+        classpath("com.android.tools.build:gradle:8.3.0") // Correct plugin version added
     }
 }
 
 allprojects {
     repositories {
-        google() // Google Maven 저장소 추가
+        google()
         mavenCentral()
     }
 }
