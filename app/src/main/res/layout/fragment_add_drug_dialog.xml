@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:padding="25dp"
     android:background="#e4e4e4"
-    tools:context=".AddDrugDialogFragment">
+    tools:context=".dialogfragment.AddDrugDialogFragment">
 
     <Button
         android:id="@+id/addCategory_btn"
