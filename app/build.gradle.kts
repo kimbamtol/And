@@ -42,7 +42,9 @@ android {
         dataBinding =true // 데이터 바인딩 활성화
         viewBinding = true
     }
+
 }
+
 
 dependencies {
     implementation("androidx.core:core-ktx:1.9.0")
@@ -86,4 +88,9 @@ dependencies {
     implementation("androidx.camera:camera-view:1.0.0-alpha31")
     // If you want to additionally use the CameraX Extensions library
     implementation("androidx.camera:camera-extensions:1.0.0-alpha31")
-    }
+
+    // Image Crop
+    implementation("com.vanniktech:android-image-cropper:4.5.0")
+//    implementation ("com.canhub.cropper:android-cropper:2.8.0")
+
+}
