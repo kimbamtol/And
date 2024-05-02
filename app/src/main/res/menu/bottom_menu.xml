@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_manageDrug"
+        android:icon="@drawable/pill"
+        android:title="알약 관리" />
+
+    <item
+        android:id="@+id/menu_Calendar"
+        android:icon="@drawable/calendar"
+        android:title="달력" />
+
+    <item
+        android:id="@+id/menu_Mypage"
+        android:icon="@drawable/user"
+        android:title="마이 페이지" />
+
+</menu>

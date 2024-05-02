@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
-import com.and.DrugDataModel
+import com.and.datamodel.DrugDataModel
 import com.and.databinding.CategorylistItemBinding
 
 class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): RecyclerView.Adapter<CategoryListAdapter.CategoryListViewHodlder>(),
@@ -20,17 +20,6 @@ class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): R
     var onClickListener: OnClickListener? = null
 
     inner class CategoryListViewHodlder(private val binding: CategorylistItemBinding) : RecyclerView.ViewHolder(binding.root) {
-        init {
-            binding.apply {
-                root.setOnClickListener {
-                    if (detailRecyclerView.visibility == View.GONE) {
-                        detailRecyclerView.visibility = View.VISIBLE
-                    } else {
-                        detailRecyclerView.visibility = View.GONE
-                    }
-                }
-            }
-        }
         fun bind(drugDataModel: DrugDataModel) {
             binding.apply {
                 categoryName.text = drugDataModel.category
@@ -40,6 +29,20 @@ class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): R
                 setting.setOnClickListener {
                     onClickListener?.onSettingClick(drugDataModel)
                 }
+
+                root.setOnClickListener {
+                    if (detailRecyclerView.visibility == View.GONE) {
+                        detailRecyclerView.visibility = View.VISIBLE
+                    } else {
+                        detailRecyclerView.visibility = View.GONE
+                    }
+                }
+            }
+        }
+
+        fun bind() {
+            binding.apply {
+                categoryItem.visibility = View.INVISIBLE
             }
         }
     }
@@ -49,10 +52,14 @@ class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): R
         return CategoryListViewHodlder(binding)
     }
 
-    override fun getItemCount(): Int = drugDataModels.size
+    override fun getItemCount(): Int = drugDataModels.size + 2
 
     override fun onBindViewHolder(holder: CategoryListViewHodlder, position: Int) {
-        holder.bind(drugDataModels[position])
+        if (position >= drugDataModels.size) {
+            holder.bind()
+        } else {
+            holder.bind(drugDataModels[position])
+        }
     }
 
     override fun getFilter(): Filter {
