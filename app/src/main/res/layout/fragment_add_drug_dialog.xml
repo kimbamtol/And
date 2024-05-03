@@ -2,28 +2,37 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="25dp"
-    android:background="#e4e4e4"
+    android:background="@drawable/roundstyle3"
+    android:padding="30dp"
     tools:context=".dialogfragment.AddDrugDialogFragment">
 
     <Button
         android:id="@+id/addCategory_btn"
-        android:layout_width="200dp"
+        android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:text="Add Catecory"
+        android:background="@drawable/roundstyle"
+        android:stateListAnimator="@null"
+        android:text="카테고리 추가"
+        android:textSize="20sp"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/addDetail_btn"
-        android:layout_width="200dp"
+        android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:text="Add Detail"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/roundstyle"
+        android:stateListAnimator="@null"
+        android:text="알약 추가"
+        android:textSize="20sp"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/addCategory_btn" />
 </androidx.constraintlayout.widget.ConstraintLayout>

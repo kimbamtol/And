@@ -1,13 +1,12 @@
 package com.and.adpater
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
-import com.and.DrugDataModel
+import com.and.datamodel.DrugDataModel
 import com.and.databinding.SelectcategorylistItemBinding
 
 class SelectCategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): RecyclerView.Adapter<SelectCategoryListAdapter.SelectCategoryViewHodlder>(),
@@ -35,11 +34,11 @@ class SelectCategoryListAdapter(private val drugDataModelList: List<DrugDataMode
         fun bind(drugDataModel: DrugDataModel) {
             binding.apply {
                 selectCategoryName.text = drugDataModel.category
-                checkbox.setOnClickListener {
+                categoryCheckbox.setOnClickListener {
                     onItemClickListener?.onItemClick(drugDataModels[bindingAdapterPosition])
                     toggleSelection(drugDataModels[bindingAdapterPosition])
                 }
-                checkbox.isChecked = selectedItems.contains(drugDataModels[bindingAdapterPosition])
+                categoryCheckbox.isChecked = selectedItems.contains(drugDataModels[bindingAdapterPosition])
             }
         }
     }

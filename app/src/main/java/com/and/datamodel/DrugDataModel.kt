@@ -1,4 +1,4 @@
-package com.and
+package com.and.datamodel
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
