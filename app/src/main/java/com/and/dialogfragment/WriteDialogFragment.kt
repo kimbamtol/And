@@ -28,6 +28,9 @@ class WriteDialogFragment : DialogFragment() {
         _binding = FragmentWriteDialogBinding.inflate(inflater, container, false)
         binding.apply {
             finishButton.setOnClickListener {
+                if(write.text.toString() == "") {
+                    return@setOnClickListener
+                }
                 clickYesListener?.onClick(write.text.toString())
                 dismiss()
             }

@@ -20,6 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="65dp"
         android:background="#f1f3f5"
+        android:visibility="gone"
         app:itemRippleColor="@null"
         app:itemTextColor="@drawable/menu_item_color"
         app:itemIconTint="@drawable/menu_item_color"

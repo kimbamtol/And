@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "409220943956",
+    "firebase_url": "https://managedrugapp-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "managedrugapp",
+    "storage_bucket": "managedrugapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:409220943956:android:640f97269ec154d023ddc1",
+        "android_client_info": {
+          "package_name": "com.and"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5i-yt6wN781gVms4Y-Ubu54aLlvOlHq0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
