@@ -18,6 +18,9 @@ import com.and.databinding.FragmentManageDrugBinding
 import com.and.datamodel.DrugDataModel
 import com.and.dialogfragment.AddDrugDialogFragment
 import com.and.dialogfragment.SettingDrugDialogFragment
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
 
 class ManageDrugFragment : Fragment() {
     private var _binding: FragmentManageDrugBinding? = null
@@ -149,7 +152,6 @@ class ManageDrugFragment : Fragment() {
             buttonToNext.setOnClickListener {
                 val intent = Intent(requireActivity(), ImageRecognitionActivity::class.java)
                 startActivity(intent)
-
             }
         }
         return binding.root

@@ -33,6 +33,9 @@ class LoginActivity : AppCompatActivity() {
         binding.btnStartKakaoLogin.setOnClickListener {
             kakaoLogin()
         }
+        binding.ToMainActivity.setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
+        }
     }
 
     private fun kakaoLogin() {
