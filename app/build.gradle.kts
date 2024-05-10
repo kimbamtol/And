@@ -71,6 +71,8 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")    //mlkit
     implementation ("com.kakao.sdk:v2-user:2.20.1")
+    implementation("com.navercorp.nid:oauth:5.9.1") // jdk 11
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
 
 
     //implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.1' <- Cannot recognize Korean

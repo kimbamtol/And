@@ -7,7 +7,7 @@
         android:background="#FFFFFF"
         tools:context=".LoginActivity">
 
-    <FrameLayout
+    <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="35dp"
@@ -19,11 +19,21 @@
         <ImageButton
                 android:id="@+id/btnStartKakaoLogin"
                 android:layout_width="wrap_content"
-                android:layout_height="80dp"
+                android:layout_height="40dp"
                 android:layout_gravity="center"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="10dp"
                 android:background="#00FF0000"
                 app:srcCompat="@drawable/kakao_login" />
 
-    </FrameLayout>
+        <ImageButton
+            android:id="@+id/tv_naver_login"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="10dp"
+            android:background="#00FF0000"
+            app:srcCompat="@drawable/naver_login"
+            app:layout_constraintTop_toTopOf="@+id/btnStartKakaoLogin"/>
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
