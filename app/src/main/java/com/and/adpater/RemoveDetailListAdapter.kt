@@ -24,15 +24,13 @@ class RemoveDetailListAdapter(private val detailList: List<String>): RecyclerVie
         }
         fun bind(name: String) {
             binding.apply {
+                detailCheckbox.background = null
                 detailName.text = name
-                if (detailName.text == "a") {
-                    strikethrough.visibility = View.VISIBLE
-                }
-                checkbox.setOnClickListener {
+                detailCheckbox.setOnClickListener {
                     onItemClickListener?.onItemClick(detailList[bindingAdapterPosition])
                     toggleSelection(detailList[bindingAdapterPosition])
                 }
-                checkbox.isChecked = selectedItems.contains(detailList[bindingAdapterPosition])
+                detailCheckbox.isChecked = selectedItems.contains(detailList[bindingAdapterPosition])
             }
         }
     }

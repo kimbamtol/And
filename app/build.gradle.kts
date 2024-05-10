@@ -2,8 +2,9 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
+    id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.kapt")
 }
-
 
 android {
     namespace = "com.and"
@@ -39,7 +40,7 @@ android {
     }
     buildFeatures {
         //noinspection DataBindingWithoutKapt
-        dataBinding =true // 데이터 바인딩 활성화
+        dataBinding = true // 데이터 바인딩 활성화
         viewBinding = true
     }
 
@@ -47,32 +48,36 @@ android {
 
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+    implementation("androidx.core:core-ktx:1.13.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.camera:camera-core:1.3.2")
     implementation("androidx.camera:camera-view:1.3.2")
     implementation("androidx.camera:camera-lifecycle:1.3.2")
-    implementation("androidx.activity:activity:1.8.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
+    implementation("androidx.activity:activity-ktx:1.9.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
-    testImplementation(kotlin("test-junit"))
-    implementation("org.jsoup:jsoup:1.14.1")
-    implementation("androidx.activity:activity:1.8.2")
-    implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.webkit:webkit:1.10.0")
-    testImplementation(kotlin("test-junit"))
-    implementation("org.jsoup:jsoup:1.14.1")
-    testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")    //mlkit
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+    implementation("org.jsoup:jsoup:1.14.1")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation(kotlin("test-junit"))
+
     implementation ("com.kakao.sdk:v2-user:2.20.1")
     implementation("com.navercorp.nid:oauth:5.9.1") // jdk 11
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
+
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-database-ktx:21.0.0")
+    
+    implementation("com.google.android.material:material:1.11.0")
+
 
 
     //implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.1' <- Cannot recognize Korean

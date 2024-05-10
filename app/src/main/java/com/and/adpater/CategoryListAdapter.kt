@@ -1,16 +1,17 @@
 package com.and.adpater
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
-import com.and.DrugDataModel
+import com.and.datamodel.DrugDataModel
 import com.and.databinding.CategorylistItemBinding
 
-class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): RecyclerView.Adapter<CategoryListAdapter.CategoryListViewHodlder>(),
+class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): RecyclerView.Adapter<CategoryListAdapter.CategoryListViewHolder>(),
     Filterable {
     fun interface OnClickListener {
         fun onSettingClick(drugDataModel: DrugDataModel)
@@ -19,9 +20,19 @@ class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): R
     private var drugDataModels: List<DrugDataModel> = drugDataModelList
     var onClickListener: OnClickListener? = null
 
-    inner class CategoryListViewHodlder(private val binding: CategorylistItemBinding) : RecyclerView.ViewHolder(binding.root) {
-        init {
+    inner class CategoryListViewHolder(private val binding: CategorylistItemBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(drugDataModel: DrugDataModel) {
             binding.apply {
+                binding.category = drugDataModel
+
+                val adapter = DetailListAdapter(drugDataModel.details)
+                detailRecyclerView.adapter = adapter
+
+                setting.setOnClickListener {
+                    onClickListener?.onSettingClick(drugDataModel)
+                }
+
                 root.setOnClickListener {
                     if (detailRecyclerView.visibility == View.GONE) {
                         detailRecyclerView.visibility = View.VISIBLE
@@ -31,27 +42,16 @@ class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): R
                 }
             }
         }
-        fun bind(drugDataModel: DrugDataModel) {
-            binding.apply {
-                categoryName.text = drugDataModel.category
-                val adapter = DetailListAdapter(drugDataModel.details)
-                detailRecyclerView.adapter = adapter
-
-                setting.setOnClickListener {
-                    onClickListener?.onSettingClick(drugDataModel)
-                }
-            }
-        }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryListViewHodlder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryListViewHolder {
         val binding = CategorylistItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return CategoryListViewHodlder(binding)
+        return CategoryListViewHolder(binding)
     }
 
     override fun getItemCount(): Int = drugDataModels.size
 
-    override fun onBindViewHolder(holder: CategoryListViewHodlder, position: Int) {
+    override fun onBindViewHolder(holder: CategoryListViewHolder, position: Int) {
         holder.bind(drugDataModels[position])
     }
 
