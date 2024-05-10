@@ -23,6 +23,7 @@ import com.and.dialogfragment.AddDrugDialogFragment
 import com.and.dialogfragment.SettingDrugDialogFragment
 import com.and.viewModel.UserDataViewModel
 
+
 class ManageDrugFragment : Fragment() {
     private var _binding: FragmentManageDrugBinding? = null
     private val binding get() = _binding!!
@@ -170,7 +171,6 @@ class ManageDrugFragment : Fragment() {
             buttonToNext.setOnClickListener {
                 val intent = Intent(requireActivity(), ImageRecognitionActivity::class.java)
                 startActivity(intent)
-
             }
             return binding.root
         }
