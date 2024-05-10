@@ -1,17 +1,29 @@
 package com.and
 
+import android.content.ContentValues
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.and.databinding.ActivityLoginBinding
+import com.and.datamodel.UserDataModel
+import com.and.setting.FBRef
+import com.and.setting.Setting
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.kakao.sdk.common.util.Utility
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class LoginActivity : AppCompatActivity() {
     private var _binding: ActivityLoginBinding? = null
@@ -60,10 +72,43 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun updateUIAndFinish() {
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
-        finish() // LoginActivity를 액티비티 스택에서 제거
         setLogin(true) // 로그인 버튼을 숨김
+        UserApiClient.instance.me { user, error1 ->
+            if (error1 != null) {
+                Log.e(ContentValues.TAG, "사용자 정보 요청 실패", error1)
+                setLogin(false)
+            } else if (user != null) {
+                user.kakaoAccount?.email?.let { email ->
+                    val myEmail = email.split(".")[0]
+                    FBRef.userRef.child(myEmail).addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                lifecycleScope.launch {
+                                    val singInJob = async(Dispatchers.IO) {
+                                        if (!snapshot.exists()) {
+                                            val userInfo = UserDataModel(myEmail = email)
+                                            FBRef.userRef.child(myEmail).child("userInfo")
+                                                .setValue(userInfo).await()
+                                        }
+                                    }
+
+                                    singInJob.await()
+
+                                    Setting.email = myEmail
+
+                                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                                    startActivity(intent)
+                                    finish() // LoginActivity를 액티비티 스택에서 제거
+                                }
+                            }
+
+                            override fun onCancelled(reason: DatabaseError) {
+                                Log.d("error", reason.details)
+                                setLogin(false)
+                            }
+                        })
+                }
+            }
+        }
     }
 
     private fun setLogin(bool: Boolean) {

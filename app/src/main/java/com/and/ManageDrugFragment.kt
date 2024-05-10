@@ -1,30 +1,34 @@
 package com.and
 
 import android.annotation.SuppressLint
-import android.content.ClipData
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.DragEvent
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.databinding.BindingAdapter
+import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.RecyclerView
 import com.and.adpater.CategoryListAdapter
+import com.and.databinding.CategorylistItemBinding
 import com.and.databinding.FragmentManageDrugBinding
 import com.and.datamodel.DrugDataModel
 import com.and.dialogfragment.AddDrugDialogFragment
 import com.and.dialogfragment.SettingDrugDialogFragment
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import com.and.viewModel.UserDataViewModel
 
 
 class ManageDrugFragment : Fragment() {
     private var _binding: FragmentManageDrugBinding? = null
     private val binding get() = _binding!!
+    private val userDataViewModel: UserDataViewModel by activityViewModels()
+    private var categoryList = mutableListOf<DrugDataModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -37,7 +41,13 @@ class ManageDrugFragment : Fragment() {
     ): View {
         _binding = FragmentManageDrugBinding.inflate(inflater, container, false)
         binding.apply {
-            val categoryList = mutableListOf(DrugDataModel("Mon", mutableListOf("a", "b", "c")), DrugDataModel("Tues", mutableListOf("a", "b", "c")))
+            viewModel = userDataViewModel
+            lifecycleOwner = requireActivity()
+
+            userDataViewModel.drugInfos.value?.also {
+                categoryList = it
+            }
+
             val adapter = CategoryListAdapter(categoryList)
             adapter.onClickListener = CategoryListAdapter.OnClickListener { drugDataModel ->
                 val settingDrugDialogFragment = SettingDrugDialogFragment().apply {
@@ -46,46 +56,50 @@ class ManageDrugFragment : Fragment() {
                     arguments = bundle
                 }
 
-                settingDrugDialogFragment.onButtonClickListener = object: SettingDrugDialogFragment.OnButtonClickListener {
-                    override fun onRemoveCategoryBtnClick(removeDrugDataModel: DrugDataModel) {
-                        val categoryIndex = categoryList.indexOf(removeDrugDataModel)
-                        Log.d("savepoint", categoryIndex.toString())
-                        if (categoryIndex != -1) {
-                            categoryList.remove(removeDrugDataModel)
-                            adapter.notifyItemRemoved(categoryIndex)
-                        }
-                    }
-
-                    override fun onChangeNameBtnClick(
-                        oldDrugDataModel: DrugDataModel,
-                        newDrugDataModel: DrugDataModel
-                    ) {
-                        for (drugData in categoryList) {
-                            if (drugData.category == newDrugDataModel.category) {
-                                Toast.makeText(requireContext(), "같은 이름이 있어요!", Toast.LENGTH_SHORT).show()
-                                return
+                settingDrugDialogFragment.onButtonClickListener =
+                    object : SettingDrugDialogFragment.OnButtonClickListener {
+                        override fun onRemoveCategoryBtnClick(removeDrugDataModel: DrugDataModel) {
+                            val categoryIndex = categoryList.indexOf(removeDrugDataModel)
+                            if (categoryIndex != -1) {
+                                userDataViewModel.removeCategory(removeDrugDataModel)
+                                adapter.notifyItemRemoved(categoryIndex)
                             }
                         }
-                        val oldCategoryIndex = categoryList.indexOf(oldDrugDataModel)
-                        if (oldCategoryIndex != -1) {
-                            categoryList[oldCategoryIndex] = newDrugDataModel
-                            adapter.notifyItemChanged(oldCategoryIndex)
-                        }
-                        settingDrugDialogFragment.dismiss()
-                    }
 
-                    override fun onRemoveDetailBtnClick(
-                        selectedDrugDataModel: DrugDataModel,
-                        selectedDetails: List<String>
-                    ) {
-                        categoryList[categoryList.indexOf(selectedDrugDataModel)].details.removeAll(selectedDetails)
-                        adapter.notifyItemChanged(categoryList.indexOf(selectedDrugDataModel))
+                        override fun onChangeNameBtnClick(
+                            oldDrugDataModel: DrugDataModel,
+                            newDrugDataModel: DrugDataModel
+                        ) {
+                            for (drugData in categoryList) {
+                                if (drugData.category == newDrugDataModel.category) {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "같은 이름이 있어요!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return
+                                }
+                            }
+                            val oldCategoryIndex = categoryList.indexOf(oldDrugDataModel)
+                            if (oldCategoryIndex != -1) {
+                                userDataViewModel.changeCategoryName(oldDrugDataModel, newDrugDataModel)
+                                adapter.notifyItemChanged(oldCategoryIndex)
+                            }
+                            settingDrugDialogFragment.dismiss()
+                        }
+
+                        override fun onRemoveDetailBtnClick(
+                            selectedDrugDataModel: DrugDataModel,
+                            selectedDetails: List<String>
+                        ) {
+                            userDataViewModel.removeDetail(selectedDrugDataModel, selectedDetails)
+                            adapter.notifyItemChanged(categoryList.indexOf(selectedDrugDataModel))
+                        }
                     }
-                }
 
                 settingDrugDialogFragment.show(requireActivity().supportFragmentManager, "setting")
-
             }
+
             val itemAnimator = DefaultItemAnimator() // 리사이클러 뷰 아이템 변경시 애니메이션 설정
             itemAnimator.supportsChangeAnimations = false
             categoryRecyclerView.itemAnimator = itemAnimator
@@ -112,11 +126,15 @@ class ManageDrugFragment : Fragment() {
                         override fun onAddCategoryBtnClick(addDrugDataModel: DrugDataModel) {
                             for (drugData in categoryList) {
                                 if (drugData.category == addDrugDataModel.category) {
-                                    Toast.makeText(requireContext(), "같은 이름이 있어요!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "같은 이름이 있어요!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                     return
                                 }
                             }
-                            categoryList.add(addDrugDataModel)
+                            userDataViewModel.addCategory(addDrugDataModel)
                             adapter.notifyItemInserted(categoryList.indexOf(addDrugDataModel))
                             addDrugDialogFragment.dismiss()
                         }
@@ -125,12 +143,13 @@ class ManageDrugFragment : Fragment() {
                             selectedCategorys: List<DrugDataModel>,
                             newDetails: List<String>
                         ) {
-                            for(category in selectedCategorys) {
-                                categoryList[categoryList.indexOf(category)].details.addAll(newDetails)
+                            for (category in selectedCategorys) {
+                                userDataViewModel.addDetail(category, newDetails)
                                 adapter.notifyItemChanged(categoryList.indexOf(category))
                             }
                         }
                     }
+
                 addDrugDialogFragment.show(
                     requireActivity().supportFragmentManager,
                     "addDrug"
@@ -153,8 +172,8 @@ class ManageDrugFragment : Fragment() {
                 val intent = Intent(requireActivity(), ImageRecognitionActivity::class.java)
                 startActivity(intent)
             }
+            return binding.root
         }
-        return binding.root
     }
 
     override fun onDestroyView() {
