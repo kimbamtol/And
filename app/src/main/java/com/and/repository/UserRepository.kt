@@ -1,5 +1,6 @@
 package com.and.repository
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.and.setting.FBRef
 import com.and.setting.Setting
@@ -18,7 +19,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class UserRepository(private val viewModelScope: CoroutineScope) {
-    private val userRef =  FBRef.userRef.child(Setting.email)
+    private val userRef = FBRef.userRef.child(Setting.email)
+    private val TAG = "UserRepository"  // 로그 태그 추가
 
     fun observeUser(
         userInfo: MutableLiveData<UserDataModel>,
@@ -26,38 +28,46 @@ class UserRepository(private val viewModelScope: CoroutineScope) {
         successGetData: MutableLiveData<Boolean>
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val userInfoJob = async {
-                userRef.child("userInfo").get().await()
-                    .getValue(UserDataModel::class.java)
-            }
+            try {
+                val userInfoJob = async {
+                    val dataSnapshot = userRef.child("userInfo").get().await()
+                    Log.d(TAG, "UserInfo dataSnapshot: $dataSnapshot")  // 로그 추가
+                    dataSnapshot.getValue(UserDataModel::class.java)
+                }
 
-            val drugInfoJob = suspendCoroutine { continuation ->
-                userRef.child("category").addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        var categories = mutableListOf<DrugDataModel>()
-                        if (snapshot.exists()) {
-                            for (categoryData in snapshot.children) {
-                                val categoryName = categoryData.key.toString()
-                                categories.add(DrugDataModel(categoryName, (categoryData.child("details")
-                                    .getValue<MutableList<String>>() ?: mutableListOf<String>()),
-                                    categoryData.child("creationTime").getValue(Long::class.java) ?: 0L
-                                ))
+                val drugInfoJob = suspendCoroutine<MutableList<DrugDataModel>> { continuation ->
+                    userRef.child("category").addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            Log.d(TAG, "Category dataSnapshot: $snapshot")  // 로그 추가
+                            val categories = mutableListOf<DrugDataModel>()
+                            if (snapshot.exists()) {
+                                for (categoryData in snapshot.children) {
+                                    val categoryName = categoryData.key.toString()
+                                    val details = categoryData.child("details")
+                                        .getValue<MutableList<String>>() ?: mutableListOf()
+                                    val creationTime = categoryData.child("creationTime")
+                                        .getValue(Long::class.java) ?: 0L
+                                    categories.add(DrugDataModel(categoryName, details, creationTime))
+                                }
                             }
+                            continuation.resume(categories.sortedBy { it.creationTime }.toMutableList())
                         }
-                        categories = categories.sortedBy { it.creationTime }.toMutableList()
-                        continuation.resume(categories)
-                    }
 
-                    override fun onCancelled(error: DatabaseError) {
-                        continuation.resume(mutableListOf<DrugDataModel>())
-                    }
-                })
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.e(TAG, "DatabaseError: $error")  // 로그 추가
+                            continuation.resume(mutableListOf())
+                        }
+                    })
+                }
+
+                userInfo.postValue(userInfoJob.await())
+                drugInfos.postValue(drugInfoJob)
+
+                successGetData.postValue(true)
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception in observeUser: ${e.message}")  // 예외 로그 추가
+                successGetData.postValue(false)
             }
-
-            userInfo.postValue(userInfoJob.await())
-            drugInfos.postValue(drugInfoJob)
-
-            successGetData.postValue(true)
         }
     }
 

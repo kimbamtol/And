@@ -3,7 +3,6 @@ package com.and
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -16,6 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import com.google.gson.JsonParser
+import java.io.Serializable
 
 interface PublicDataService {
     @GET("/1471000/DURPrdlstInfoService03/getUsjntTabooInfoList03")
@@ -33,15 +33,13 @@ class Crawling : AppCompatActivity() {
     private val TAG = "Crawling"
     private lateinit var recognizedTexts: ArrayList<String>
     private val productList: MutableList<String> = mutableListOf()
-    private val responseList: MutableSet<String> = mutableSetOf()
-    //Main에서 불러온 details를 저장할 리스트
-    private val Main_productList: MutableList<String> = mutableListOf()
+    private val responseList: MutableSet<MutableList<String>> = mutableSetOf()
+
+    private var pendingResponses = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_recognition)
-
-        //Main_productList를 불러오자.
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.responseTextView)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -60,8 +58,13 @@ class Crawling : AppCompatActivity() {
         val service = retrofit.create(PublicDataService::class.java)
         val apiKey = "MVyZ7I0PmLzGvOmdu+dRPluZEK1tvBAagt70/uZZD5qbYD6nmJWeAmQfXq3Uuz7mMxGxfV35s4Ox7AiE0bPoQA=="
 
-        for (page in 1..10) {
-            productList.forEach { productName ->
+        // Initialize responseList with empty lists for each product
+        productList.forEach { _ ->
+            responseList.add(mutableListOf())
+        }
+
+        productList.forEachIndexed { index, productName ->
+            for (page in 1..10) {
                 val call = service.getUsjntTabooInfoList(
                     serviceKey = apiKey,
                     pageNo = page,
@@ -71,51 +74,64 @@ class Crawling : AppCompatActivity() {
                     itemName = productName
                 )
 
+                pendingResponses++
+
                 call.enqueue(object : Callback<ResponseBody> {
                     override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                         if (response.isSuccessful) {
                             val responseBody = response.body()?.string()
                             Log.d(TAG, "Response for $productName: $responseBody")
-                            parseAndAddProductNames(responseBody)
+                            parseAndAddProductNames(responseBody, index)
                         } else {
                             Log.e(TAG, "Request for $productName failed: ${response.code()}")
                         }
+                        checkPendingResponses()
                     }
 
                     override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                         Log.e(TAG, "Request for $productName failed", t)
+                        checkPendingResponses()
                     }
                 })
             }
         }
     }
 
-    private fun parseAndAddProductNames(responseBody: String?) {
+    private fun parseAndAddProductNames(responseBody: String?, index: Int) {
         responseBody?.let {
-            val jsonObject = JsonParser().parse(responseBody).asJsonObject
-            // 먼저 "body"가 실제로 JsonObject인지 확인
+            val jsonObject = JsonParser.parseString(responseBody).asJsonObject
             val bodyObject = jsonObject.getAsJsonObject("body")
-            // "body" 객체 내부에서 "items" 배열을 가져옴
             val items = bodyObject.getAsJsonArray("items")
 
+            val productNames = mutableListOf<String>()
             for (item in items) {
                 val mainIngr = item.asJsonObject.get("MIXTURE_ITEM_NAME").asString
-                val productName = mainIngr
-                //val productName = mainIngr.substringAfter("]").trim()  // 제품명 추출
-                responseList.add(productName)
+                productNames.add(mainIngr)
             }
+
+            // Add parsed product names to the corresponding index in responseList
+            (responseList.elementAt(index)).addAll(productNames)
+        }
+    }
+
+    private fun checkPendingResponses() {
+        pendingResponses--
+        if (pendingResponses == 0) {
             runOnUiThread {
-                updateResponseTextView()  // UI 스레드에서 TextView 업데이트
+                navigateToMainActivity()
             }
         }
     }
 
-    private fun updateResponseTextView() {
-        val text = responseList.joinToString(separator = "\n")
-        val textView = findViewById<TextView>(R.id.responseTextView)
-        textView.text = text
+    private fun navigateToMainActivity() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putStringArrayListExtra("productList", ArrayList(productList))
+
+        val serializableResponseList = ArrayList(responseList.map { ArrayList(it) } as ArrayList<ArrayList<String>>)
+        intent.putExtra("responseList", serializableResponseList as Serializable)
+
+        Log.d(TAG, "Navigating to MainActivity with responseList: $responseList and productList: $productList")
+        startActivity(intent)
+        finish()
     }
-
 }
-
-

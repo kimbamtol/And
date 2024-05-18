@@ -1,50 +1,94 @@
 package com.and
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.and.databinding.ActivityMainBinding
 import com.and.viewModel.UserDataViewModel
+import java.io.Serializable
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding// 뷰 바인딩을 사용할 변수를 선언
+    private lateinit var binding: ActivityMainBinding
     private lateinit var dataViewModel: UserDataViewModel
+    private val TAG = "MainActivity"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        Log.d(TAG, "onCreate called")
+
         dataViewModel = ViewModelProvider(this).get(UserDataViewModel::class.java)
 
-        dataViewModel.successGetData.observe(this) {
-            binding.menuBn.visibility = View.VISIBLE
+        dataViewModel.successGetData.observe(this) { success ->
+            if (success) {
+                Log.d(TAG, "Data loaded successfully")
+                binding.menuBn.visibility = View.VISIBLE
+                val startFragment = ManageDrugFragment()
+                changeFragment(startFragment)
 
-            val startFragment = ManageDrugFragment()
-            changeFragment(startFragment)
+                val responseList = intent.getSerializableExtra("responseList") as? ArrayList<ArrayList<String>>
+                val productList = intent.getStringArrayListExtra("productList")
+                Log.d(TAG, "Received responseList: $responseList and productList: $productList")
+                if (responseList != null && productList != null) {
+                    compareAndUpdateDrugs(responseList, productList)
+                } else {
+                    Log.d(TAG, "responseList or productList is null")
+                }
 
-            binding.apply {
-                menuBn.run {
-                    setOnItemSelectedListener { item ->
-                        when(item.itemId) {
-                            R.id.menu_manageDrug -> {
-                                val manageDrugFragment = ManageDrugFragment()
-                                changeFragment(manageDrugFragment)
-                                true
+                binding.apply {
+                    menuBn.run {
+                        setOnItemSelectedListener { item ->
+                            when(item.itemId) {
+                                R.id.menu_manageDrug -> {
+                                    val manageDrugFragment = ManageDrugFragment()
+                                    changeFragment(manageDrugFragment)
+                                    true
+                                }
+                                R.id.menu_Calendar -> {
+                                    val calendarFragment = CalendarFragment()
+                                    changeFragment(calendarFragment)
+                                    true
+                                }
+                                else -> {
+                                    val mypageFragment = MypageFragment()
+                                    changeFragment(mypageFragment)
+                                    true
+                                }
                             }
+                        }
+                    }
+                }
+            } else {
+                Log.d(TAG, "Failed to load data")
+            }
+        }
+    }
 
-                            R.id.menu_Calendar -> {
-                                val calendarFragment = CalendarFragment()
-                                changeFragment(calendarFragment)
-                                true
-                            }
+    private fun compareAndUpdateDrugs(responseList: ArrayList<ArrayList<String>>, productList: ArrayList<String>) {
+        Log.d(TAG, "Comparing and updating drugs")
+        val drugInfos = dataViewModel.drugInfos.value
+        if (drugInfos.isNullOrEmpty()) {
+            Log.d(TAG, "drugInfos is null or empty")
+            return
+        }
 
-                            else -> {
-                                val mypageFragment = MypageFragment()
-                                changeFragment(mypageFragment)
-                                true
-                            }
+        drugInfos.forEach { category ->
+            Log.d(TAG, "Checking category: ${category.category}")
+            category.details.forEachIndexed { index, drugName ->
+                responseList.forEachIndexed { responseIndex, responseDrugList ->
+                    responseDrugList.forEach { responseDrug ->
+                        if (drugName == responseDrug) {
+                            Log.d(TAG, "Matching drug found: $drugName in category: ${category.category}")
+                            val updatedDrugName = "$drugName <- 동시 복용 금지 -> ${productList[responseIndex]}"
+                            category.details[index] = updatedDrugName
+                            dataViewModel.updateDrugInfo(category)
+                        } else {
+                            Log.d(TAG, "No match for: $drugName in category: ${category.category}")
                         }
                     }
                 }
@@ -52,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun changeFragment(fragment: Fragment) {
+    private fun changeFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.screen_fl, fragment)
             .commitAllowingStateLoss()
