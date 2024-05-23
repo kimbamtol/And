@@ -86,11 +86,13 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun updateUIAndFinish() {
+        setLayoutState(true)
         setLogin(true) // 로그인 버튼을 숨김
         UserApiClient.instance.me { user, error1 ->
             if (error1 != null) {
                 Log.e(ContentValues.TAG, "사용자 정보 요청 실패", error1)
                 setLogin(false)
+                setLayoutState(false)
             } else if (user != null) {
                 user.kakaoAccount?.email?.let { email ->
                     val myEmail = email.split(".")[0]
@@ -118,6 +120,7 @@ class LoginActivity : AppCompatActivity() {
                             override fun onCancelled(reason: DatabaseError) {
                                 Log.d("error", reason.details)
                                 setLogin(false)
+                                setLayoutState(false)
                             }
                         })
                 }
@@ -131,14 +134,48 @@ class LoginActivity : AppCompatActivity() {
 
     private fun startNaverLogin(){
         var naverToken :String? = ""
+        setLayoutState(true)
+        setLogin(true)
 
         val profileCallback = object : NidProfileCallback<NidProfileResponse> {
             override fun onSuccess(response: NidProfileResponse) {
-                val intent = Intent(applicationContext, MainActivity::class.java)
-                startActivity(intent)
-                setLayoutState(true)
+                response.profile?.also {
+                    it.email?.also { email ->
+                        val myEmail = email.split(".")[0]
+                        FBRef.userRef.child(myEmail).addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                lifecycleScope.launch {
+                                    val singInJob = async(Dispatchers.IO) {
+                                        if (!snapshot.exists()) {
+                                            val userInfo = UserDataModel(myEmail = email)
+                                            FBRef.userRef.child(myEmail).child("userInfo")
+                                                .setValue(userInfo).await()
+                                        }
+                                    }
+
+                                    singInJob.await()
+
+                                    Setting.email = myEmail
+
+                                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                                    startActivity(intent)
+                                    finish() // LoginActivity를 액티비티 스택에서 제거
+                                }
+                            }
+
+                            override fun onCancelled(reason: DatabaseError) {
+                                Log.d("error", reason.details)
+                                setLogin(false)
+                                setLayoutState(false)
+                            }
+                        })
+                    }
+                }
             }
+
             override fun onFailure(httpStatus: Int, message: String) {
+                setLogin(false)
+                setLayoutState(false)
                 val errorCode = NaverIdLoginSDK.getLastErrorCode().code
                 val errorDescription = NaverIdLoginSDK.getLastErrorDescription()
                 Toast.makeText(this@LoginActivity, "errorCode: ${errorCode}\n" +
@@ -152,11 +189,12 @@ class LoginActivity : AppCompatActivity() {
         val oauthLoginCallback = object : OAuthLoginCallback {
             override fun onSuccess() {
                 naverToken = NaverIdLoginSDK.getAccessToken()
-
                 //로그인 유저 정보 가져오기
                 NidOAuthLogin().callProfileApi(profileCallback)
             }
             override fun onFailure(httpStatus: Int, message: String) {
+                setLogin(false)
+                setLayoutState(false)
                 val errorCode = NaverIdLoginSDK.getLastErrorCode().code
                 val errorDescription = NaverIdLoginSDK.getLastErrorDescription()
                 Toast.makeText(this@LoginActivity, "errorCode: ${errorCode}\n" +

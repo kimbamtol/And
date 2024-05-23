@@ -19,7 +19,7 @@ class SelectCategoryListAdapter(private val drugDataModelList: List<DrugDataMode
     var onItemClickListener: OnItemClickListener? = null
 
     private var drugDataModels: List<DrugDataModel> = drugDataModelList
-    private val selectedItems = mutableListOf<DrugDataModel>()
+    private var selectedItem = DrugDataModel()
 
     inner class SelectCategoryViewHodlder(private val binding: SelectcategorylistItemBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
@@ -38,7 +38,7 @@ class SelectCategoryListAdapter(private val drugDataModelList: List<DrugDataMode
                     onItemClickListener?.onItemClick(drugDataModels[bindingAdapterPosition])
                     toggleSelection(drugDataModels[bindingAdapterPosition])
                 }
-                categoryCheckbox.isChecked = selectedItems.contains(drugDataModels[bindingAdapterPosition])
+                categoryCheckbox.isChecked = selectedItem.equals(drugDataModel)
             }
         }
     }
@@ -84,10 +84,10 @@ class SelectCategoryListAdapter(private val drugDataModelList: List<DrugDataMode
     }
 
     private fun toggleSelection(category: DrugDataModel) {
-        if (selectedItems.contains(category)) {
-            selectedItems.remove(category)
+        if (selectedItem == category) {
+            selectedItem = DrugDataModel()
         } else {
-            selectedItems.add(category)
+            selectedItem = category
         }
         notifyItemRangeChanged(0, itemCount, null)
     }

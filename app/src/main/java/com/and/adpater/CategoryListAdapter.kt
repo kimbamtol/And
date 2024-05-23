@@ -1,27 +1,31 @@
 package com.and.adpater
 
-import android.annotation.SuppressLint
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.and.datamodel.DrugDataModel
+import com.and.R
 import com.and.databinding.CategorylistItemBinding
+import com.and.datamodel.DrugDataModel
 
-class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): RecyclerView.Adapter<CategoryListAdapter.CategoryListViewHolder>(),
-    Filterable {
-    fun interface OnClickListener {
+class CategoryListAdapter: ListAdapter<DrugDataModel, CategoryListAdapter.CategoryListViewHolder>(diffUtil), Filterable {
+    private var originList = listOf<DrugDataModel>()
+    interface OnClickListener {
         fun onSettingClick(drugDataModel: DrugDataModel)
+        fun onAlarmClick(drugDataModel: DrugDataModel)
+
+        fun onDrugClick(drugDataModel: DrugDataModel)
     }
 
-    private var drugDataModels: List<DrugDataModel> = drugDataModelList
     var onClickListener: OnClickListener? = null
 
-    inner class CategoryListViewHolder(private val binding: CategorylistItemBinding) : RecyclerView.ViewHolder(binding.root) {
-
+    inner class CategoryListViewHolder(private val binding: CategorylistItemBinding):
+        RecyclerView.ViewHolder(binding.root) {
         fun bind(drugDataModel: DrugDataModel) {
             binding.apply {
                 binding.category = drugDataModel
@@ -30,56 +34,92 @@ class CategoryListAdapter(private val drugDataModelList: List<DrugDataModel>): R
                 detailRecyclerView.adapter = adapter
 
                 setting.setOnClickListener {
+                    Log.d("savepoint", currentList.toString())
                     onClickListener?.onSettingClick(drugDataModel)
                 }
 
-                root.setOnClickListener {
+                alarm.setOnClickListener {
+                    onClickListener?.onAlarmClick(drugDataModel)
+                }
+
+                drugs.setOnClickListener {
+                    onClickListener?.onDrugClick(drugDataModel)
+                }
+
+                openRecyclerView.setOnClickListener {
                     if (detailRecyclerView.visibility == View.GONE) {
                         detailRecyclerView.visibility = View.VISIBLE
+                        arrow.setImageResource(R.drawable.arrowdown)
                     } else {
                         detailRecyclerView.visibility = View.GONE
+                        arrow.setImageResource(R.drawable.arrow)
                     }
                 }
             }
         }
     }
 
+    private val searchFilter : Filter = object : Filter() {
+        override fun performFiltering(input: CharSequence?): FilterResults {
+            val word = (input ?: "").toString().lowercase()
+            val filteredList = if (word.isEmpty()) {
+                originList
+            } else {
+                val newList = mutableListOf<DrugDataModel>()
+                originList.forEach { drugDataModel ->
+                    if (drugDataModel.category.lowercase().contains(word)) {
+                        newList.add(drugDataModel)
+                        return@forEach
+                    }
+                    drugDataModel.details.forEach { detail ->
+                        if (detail.lowercase().contains(word))
+                            newList.add(drugDataModel)
+                    }
+                }
+                newList.distinct()
+            }
+            return FilterResults().apply { values = filteredList.toMutableList() }
+        }
+
+        override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+            if (results != null) {
+                submitList((results.values as MutableList<DrugDataModel>).sortedBy { it.creationTime})
+            }
+        }
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryListViewHolder {
-        val binding = CategorylistItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding =
+            CategorylistItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return CategoryListViewHolder(binding)
     }
 
-    override fun getItemCount(): Int = drugDataModels.size
+    override fun getItemCount(): Int = currentList.size
 
     override fun onBindViewHolder(holder: CategoryListViewHolder, position: Int) {
-        holder.bind(drugDataModels[position])
+        holder.bind(currentList[position])
     }
 
     override fun getFilter(): Filter {
-        return object : Filter() {
-            override fun performFiltering(constraint: CharSequence?): FilterResults {
-                val charString = constraint.toString()
-                drugDataModels = if(charString.isEmpty()) {
-                    drugDataModelList
-                } else {
-                    val filteredList = mutableListOf<DrugDataModel>()
-                    for(drugDataModel in drugDataModelList) {
-                        if(drugDataModel.category.lowercase().contains(charString.lowercase())) {
-                            filteredList.add(drugDataModel)
-                        }
-                    }
-                    filteredList
-                }
-                val filterResult = FilterResults()
-                filterResult.values = drugDataModels
-                return filterResult
+        return searchFilter
+    }
+
+    fun setData(list: MutableList<DrugDataModel>?){
+        this.originList = list ?: listOf()
+        submitList(list)
+    }
+
+    companion object {
+        val diffUtil = object : DiffUtil.ItemCallback<DrugDataModel>() {
+            override fun areItemsTheSame(oldItem: DrugDataModel, newItem: DrugDataModel): Boolean {
+                return oldItem.creationTime == newItem.creationTime
             }
 
-            @SuppressLint("NotifyDataSetChanged")
-            @Suppress("UNCHECKED_CAST")
-            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-                drugDataModels = results?.values as List<DrugDataModel>
-                notifyDataSetChanged()
+            override fun areContentsTheSame(
+                oldItem: DrugDataModel,
+                newItem: DrugDataModel
+            ): Boolean {
+                return oldItem == newItem
             }
         }
     }

@@ -4,45 +4,36 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.activityViewModels
-import com.and.databinding.FragmentSelectAddDetailWayBinding
+import androidx.fragment.app.Fragment
+import com.and.R
+import com.and.adpater.DetailListAdapter
+import com.and.databinding.DetaillistItemBinding
+import com.and.databinding.FragmentAddDrugDialogBinding
+import com.and.databinding.FragmentDetailBinding
 import com.and.datamodel.DrugDataModel
-import com.and.viewModel.UserDataViewModel
 
-class SelectAddDetailWayFragment : DialogFragment() {
-    private var _binding: FragmentSelectAddDetailWayBinding? = null
+class DetailFragment : DialogFragment() {
+
+    private var _binding: FragmentDetailBinding? = null
     private val binding get() = _binding!!
-    private val userDataViewModel: UserDataViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSelectAddDetailWayBinding.inflate(inflater, container, false)
-        val selectedCategory = arguments?.getParcelable("selectedList", DrugDataModel::class.java) ?: DrugDataModel()
+        _binding = FragmentDetailBinding.inflate(inflater, container, false)
+        val drugDataModel = arguments?.getParcelable("selectedCategory", DrugDataModel::class.java) ?: DrugDataModel()
         binding.apply {
-            writeBtn.setOnClickListener {
-                val writeDialogFragment = WriteDialogFragment()
-                writeDialogFragment.clickYesListener = WriteDialogFragment.OnClickYesListener {
-                    try {
-                        userDataViewModel.addDetail(selectedCategory, listOf(it))
-                    } catch (e: Exception) {
-                        return@OnClickYesListener
-                    } finally {
-                        dismiss()
-                    }
-                }
-                writeDialogFragment.show(requireActivity().supportFragmentManager, "writeDetail")
-            }
+            category = drugDataModel
+            val detailListAdapter = DetailListAdapter(drugDataModel.details)
+            DetailsRecyclerView.adapter = detailListAdapter
         }
-
         isCancelable = true
         this.dialog?.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         this.dialog?.window!!.setGravity(Gravity.BOTTOM)

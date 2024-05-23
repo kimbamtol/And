@@ -5,7 +5,6 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -13,38 +12,33 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 import com.and.datamodel.DrugDataModel
-import com.and.adpater.RemoveDetailListAdapter
+import com.and.adpater.SelectDetailListAdapter
 import com.and.databinding.FragmentDeleteDetailBinding
+import com.and.viewModel.UserDataViewModel
 
 class DeleteDetailFragment : DialogFragment() {
-
-    fun interface OnRemoveButtonClickListener {
-        fun onRemoveBtnClick(details: List<String>)
-    }
-
     private var _binding: FragmentDeleteDetailBinding? = null
     private val binding get() = _binding!!
     private val removeList = mutableListOf<String>()
-    var onRemoveButtonClickListener: OnRemoveButtonClickListener? = null
+    private val userDataViewModel: UserDataViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentDeleteDetailBinding.inflate(inflater, container, false)
-        val categoryInfo = arguments?.getSerializable("categoryInfo", DrugDataModel::class.java)?: DrugDataModel()
+        val categoryInfo = (arguments?.getParcelable("categoryInfo", DrugDataModel::class.java)?: DrugDataModel())
         binding.apply {
-            val adapter = RemoveDetailListAdapter(categoryInfo.details)
-            adapter.onItemClickListener = RemoveDetailListAdapter.OnItemClickListener {
+            val adapter = SelectDetailListAdapter(categoryInfo.details)
+            adapter.onItemClickListener = SelectDetailListAdapter.OnItemClickListener {
                 if(removeList.contains(it)) {
                     removeList.remove(it)
-                    Log.d("savepoint", removeList.toString())
                     return@OnItemClickListener
                 }
 
                 removeList.add(it)
-                Log.d("savepoint", removeList.toString())
             }
             removeDetaisRecyclerView.adapter = adapter
             removeDetailsBtn.setOnClickListener {
@@ -53,8 +47,13 @@ class DeleteDetailFragment : DialogFragment() {
                 val listener = DialogInterface.OnClickListener { _, ans ->
                     when (ans) {
                         DialogInterface.BUTTON_POSITIVE -> {
-                            onRemoveButtonClickListener?.onRemoveBtnClick(removeList)
-                            dismiss()
+                            try {
+                                userDataViewModel.removeDetail(categoryInfo, removeList)
+                            } catch (e: Exception) {
+                                return@OnClickListener
+                            } finally {
+                                dismiss()
+                            }
                         }
                     }
                 }

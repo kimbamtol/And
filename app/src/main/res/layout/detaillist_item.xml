@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="5dp">
+    android:padding="10dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/detail_item"
@@ -18,9 +18,9 @@
 
         <ImageView
             android:id="@+id/arrow"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:src="@drawable/arrowbottomright"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/pill"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

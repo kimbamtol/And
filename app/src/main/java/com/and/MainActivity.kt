@@ -2,7 +2,9 @@ package com.and
 
 import android.os.Bundle
 import android.util.Log
+import android.os.Message
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -11,7 +13,7 @@ import com.and.viewModel.UserDataViewModel
 import java.io.Serializable
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
     private lateinit var dataViewModel: UserDataViewModel
     private val TAG = "MainActivity"
 
@@ -19,7 +21,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         Log.d(TAG, "onCreate called")
 
         dataViewModel = ViewModelProvider(this).get(UserDataViewModel::class.java)
@@ -96,9 +97,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun changeFragment(fragment: Fragment) {
+    fun changeFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.screen_fl, fragment)
             .commitAllowingStateLoss()
+    }
+
+    fun toastMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
