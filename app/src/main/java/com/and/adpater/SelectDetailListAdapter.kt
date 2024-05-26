@@ -1,12 +1,11 @@
 package com.and.adpater
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.and.databinding.RemovedetaillistItemBinding
 
-class RemoveDetailListAdapter(private val detailList: List<String>): RecyclerView.Adapter<RemoveDetailListAdapter.RemoveDetailListViewHolder>() {
+class SelectDetailListAdapter(private val detailList: List<String>): RecyclerView.Adapter<SelectDetailListAdapter.RemoveDetailListViewHolder>() {
 
     private val selectedItems = mutableListOf<String>()
 

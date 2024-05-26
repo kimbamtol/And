@@ -6,6 +6,9 @@
     <data>
         <import type="android.view.View" />
         <variable
+            name="fragment"
+            type="com.and.ManageDrugFragment" />
+        <variable
             name="viewModel"
             type="com.and.viewModel.UserDataViewModel" />
     </data>
@@ -135,6 +138,8 @@
                 android:layout_height="match_parent"
                 android:visibility="@{viewModel.drugInfos.empty ? View.GONE : View.VISIBLE}"
                 android:overScrollMode="never"
+                app:listData="@{viewModel.drugInfos}"
+                app:fragment="@{fragment}"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>

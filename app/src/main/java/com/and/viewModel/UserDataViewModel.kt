@@ -1,24 +1,31 @@
 package com.and.viewModel
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.and.repository.UserRepository
 import com.and.datamodel.DrugDataModel
+import com.and.datamodel.FirebaseDbAlarmDataModel
+import com.and.datamodel.RoomDbAlarmDataModel
 import com.and.datamodel.UserDataModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class UserDataViewModel : ViewModel() {
-    private val repository = UserRepository(viewModelScope)
+class UserDataViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository = UserRepository(application)
     private val _userInfo = MutableLiveData<UserDataModel>()
     private val _drugInfos = MutableLiveData<MutableList<DrugDataModel>>()
     private val _successGetData = MutableLiveData<Boolean>()
     private val TAG = "UserDataViewModel"  // 로그 태그 추가
 
     init {
-        Log.d(TAG, "Initializing UserDataViewModel")
-        repository.observeUser(_userInfo, _drugInfos, _successGetData)
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.d(TAG, "Initializing UserDataViewModel")
+            repository.observeUser(_userInfo, _drugInfos, _successGetData)
+        }
     }
 
     val userInfo: LiveData<UserDataModel>
@@ -59,20 +66,35 @@ class UserDataViewModel : ViewModel() {
 
     fun addDetail(selectedCategory: DrugDataModel, newDetails: List<String>) {
         Log.d(TAG, "Adding details: $newDetails to category: ${selectedCategory.category}")
-        val newList = _drugInfos.value!!.also {
-            it[it.indexOf(selectedCategory)].details.addAll(newDetails)
+        val newList = mutableListOf<DrugDataModel>()
+        _drugInfos.value!!.forEach {
+            newList.add(it.copy())
         }
+
+        val categoryNum = newList.indexOf(selectedCategory)
+        newList.also {
+            it[categoryNum].details.addAll(newDetails)
+            it[categoryNum].details = it[categoryNum].details.distinct().toMutableList()
+        }
+
         _drugInfos.postValue(newList)
-        repository.addDetail(newList[newList.indexOf(selectedCategory)])
+        repository.addDetail(newList[categoryNum])
     }
 
     fun removeDetail(selectedDrugDataModel: DrugDataModel, selectedDetails: List<String>) {
         Log.d(TAG, "Removing details: $selectedDetails from category: ${selectedDrugDataModel.category}")
-        val newList = _drugInfos.value!!.also {
-            it[it.indexOf(selectedDrugDataModel)].details.removeAll(selectedDetails)
+        val newList = mutableListOf<DrugDataModel>()
+        _drugInfos.value!!.forEach {
+            newList.add(it.copy())
         }
+
+        val categoryNum = newList.indexOf(selectedDrugDataModel)
+        newList.also {
+            it[categoryNum].details.removeAll(selectedDetails)
+        }
+
         _drugInfos.postValue(newList)
-        repository.removeDetail(newList[newList.indexOf(selectedDrugDataModel)])
+        repository.removeDetail(newList[categoryNum])
     }
 
     fun updateDrugInfo(updatedDrugDataModel: DrugDataModel) {
@@ -86,4 +108,23 @@ class UserDataViewModel : ViewModel() {
         _drugInfos.postValue(newList)
         repository.addDetail(updatedDrugDataModel)
     }
+
+    fun addAlarm(alarmModels: RoomDbAlarmDataModel) {
+        repository.addAlarm(alarmModels)
+    }
+
+    fun deleteAlarm(alarmCode: Int) {
+        repository.deleteAlarm(alarmCode)
+    }
+
+    fun updateFirebaseAlarmTime(drugDataModel: DrugDataModel, alarmModels: List<FirebaseDbAlarmDataModel>) {
+        val newList = _drugInfos.value!!.also {
+            it[it.indexOf(drugDataModel)].firstAlarm = alarmModels[0]
+            it[it.indexOf(drugDataModel)].secondAlarm = alarmModels[1]
+            it[it.indexOf(drugDataModel)].thirdAlarm = alarmModels[2]
+        }
+        _drugInfos.postValue(newList)
+        repository.updateFirebaseAlarmTime(drugDataModel, alarmModels)
+    }
 }
+

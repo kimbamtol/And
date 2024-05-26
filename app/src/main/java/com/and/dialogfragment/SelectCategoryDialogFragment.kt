@@ -4,6 +4,7 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -11,20 +12,16 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 import com.and.datamodel.DrugDataModel
 import com.and.adpater.SelectCategoryListAdapter
 import com.and.databinding.FragmentSelectCategoryDialogBinding
+import com.and.viewModel.UserDataViewModel
 
 class SelectCategoryDialogFragment : DialogFragment() {
     private var _binding: FragmentSelectCategoryDialogBinding? = null
     private val binding get() = _binding!!
-    private val selectList = mutableListOf<DrugDataModel>()
-
-    fun interface OnSuccessAddDetailsListener {
-        fun onSuccessAddDetails(selectedCategorys: List<DrugDataModel>, newDetails: List<String>)
-    }
-
-    var onSuccessAddDetailsListener: OnSuccessAddDetailsListener? = null
+    private var selectedCategory = DrugDataModel()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,24 +32,25 @@ class SelectCategoryDialogFragment : DialogFragment() {
         binding.apply {
             val adapter = SelectCategoryListAdapter(categoryList)
             adapter.onItemClickListener = SelectCategoryListAdapter.OnItemClickListener {
-                if(selectList.contains(it)) {
-                    selectList.remove(it)
+                if(selectedCategory == it) {
+                    selectedCategory = DrugDataModel()
                     return@OnItemClickListener
                 }
-                selectList.add(it)
+                selectedCategory = it
             }
 
             selectCategoryRecyclerView.adapter = adapter
 
             selectCategoryBtn.setOnClickListener {
-                if (selectList.isEmpty()) {
+                if (selectedCategory.category == "") {
                     Toast.makeText(requireContext(), "카테고리를 선택 해주세요!", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
 
-                val selectAddDetailWayFragment = SelectAddDetailWayFragment()
-                selectAddDetailWayFragment.onAddDetailListener = SelectAddDetailWayFragment.OnAddDetailListener {
-                    onSuccessAddDetailsListener?.onSuccessAddDetails(selectList, it)
+                val selectAddDetailWayFragment = SelectAddDetailWayFragment().apply {
+                    val bundle = Bundle()
+                    bundle.putParcelable("selectedList", selectedCategory)
+                    arguments = bundle
                 }
                 selectAddDetailWayFragment.show(requireActivity().supportFragmentManager, "selectWays")
                 dismiss()
