@@ -19,6 +19,10 @@ import com.and.alarm.AlarmSettingFragment
 import com.and.datamodel.DrugDataModel
 import com.and.databinding.FragmentAddDrugDialogBinding
 import com.and.viewModel.UserDataViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AddDrugDialogFragment : DialogFragment() {
     private lateinit var mainactivity: MainActivity
@@ -36,10 +40,7 @@ class AddDrugDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentAddDrugDialogBinding.inflate(inflater, container, false)
-        val categoryList =
-            arguments?.getParcelableArrayList("categoryList", DrugDataModel::class.java)
-                ?: arrayListOf()
-
+        val categoryList = arguments?.getParcelableArrayList("categoryList", DrugDataModel::class.java) ?: arrayListOf()
         binding.apply {
             addCategoryBtn.setOnClickListener {
                 val writeDialogFragment = WriteDialogFragment()

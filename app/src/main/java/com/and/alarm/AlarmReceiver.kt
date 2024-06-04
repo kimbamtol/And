@@ -57,7 +57,9 @@ class AlarmReceiver: BroadcastReceiver() {
 
         val resultIntent = Intent(context, CheckAlarmActivity::class.java).apply {
             this.putExtra("alarmCode", requestCode)
+            this.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         }
+
         val pendingIntent =
             PendingIntent.getActivity(
                 context,

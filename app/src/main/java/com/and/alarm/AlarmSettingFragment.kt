@@ -1,5 +1,6 @@
 package com.and.alarm
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -8,6 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import kotlin.system.exitProcess
 
 class AlarmSettingFragment : Fragment() {
     private var _binding: FragmentAlarmSettingBinding? = null
@@ -39,6 +43,25 @@ class AlarmSettingFragment : Fragment() {
     private var thirdAlarmHour = 19
     private var thirdAlarmMinutes = 0
 
+    private val callback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            val builder = AlertDialog.Builder(requireContext())
+            builder.setTitle("나가시겠습니까?")
+            val listener = DialogInterface.OnClickListener { _, ans ->
+                when (ans) {
+                    DialogInterface.BUTTON_POSITIVE -> {
+                        val manageDrugFragment = ManageDrugFragment()
+                        mainactivity.changeFragment(manageDrugFragment)
+                    }
+                }
+            }
+
+            builder.setPositiveButton("네", listener)
+            builder.setNegativeButton("아니오", null)
+            builder.show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainactivity = requireActivity() as MainActivity
@@ -50,12 +73,32 @@ class AlarmSettingFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentAlarmSettingBinding.inflate(inflater, container, false)
+
+        requireActivity().onBackPressedDispatcher.addCallback(requireActivity(), callback)
+
         val existingDrugDataModel = arguments?.getParcelable("selectedCategory", DrugDataModel::class.java) ?: DrugDataModel()
         val newCategory = arguments?.getString("newCategory") ?: ""
         val currentTimeLong = System.currentTimeMillis()
         val currentTimeInt = (System.currentTimeMillis() / 1000).toInt()
         val tempString = currentTimeInt.toString().substring(1)
         binding.apply {
+            btnGoManage.setOnClickListener {
+                val builder = AlertDialog.Builder(requireContext())
+                builder.setTitle("나가시겠습니까?")
+                val listener = DialogInterface.OnClickListener { _, ans ->
+                    when (ans) {
+                        DialogInterface.BUTTON_POSITIVE -> {
+                            val manageDrugFragment = ManageDrugFragment()
+                            mainactivity.changeFragment(manageDrugFragment)
+                        }
+                    }
+                }
+
+                builder.setPositiveButton("네", listener)
+                builder.setNegativeButton("아니오", null)
+                builder.show()
+            }
+
             firstAlarm.setOnClickListener {
                 showTimePicker(firstAlarmHour, firstAlarmMinutes) { hour, minutes ->
                     firstAlarmHour = hour
@@ -191,12 +234,16 @@ class AlarmSettingFragment : Fragment() {
                     }
                 } catch (e: Exception) {
                     Toast.makeText(requireContext(), "오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
-                    Log.d("savepoint", "aaaaa")
                     return@setOnClickListener
                 }
             }
         }
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        requireActivity().onBackPressedDispatcher.addCallback(requireActivity(), callback)
     }
 
     override fun onDestroy() {

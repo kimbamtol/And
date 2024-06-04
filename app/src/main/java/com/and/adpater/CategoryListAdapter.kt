@@ -18,8 +18,6 @@ class CategoryListAdapter: ListAdapter<DrugDataModel, CategoryListAdapter.Catego
     interface OnClickListener {
         fun onSettingClick(drugDataModel: DrugDataModel)
         fun onAlarmClick(drugDataModel: DrugDataModel)
-
-        fun onDrugClick(drugDataModel: DrugDataModel)
     }
 
     var onClickListener: OnClickListener? = null
@@ -34,16 +32,11 @@ class CategoryListAdapter: ListAdapter<DrugDataModel, CategoryListAdapter.Catego
                 detailRecyclerView.adapter = adapter
 
                 setting.setOnClickListener {
-                    Log.d("savepoint", currentList.toString())
                     onClickListener?.onSettingClick(drugDataModel)
                 }
 
                 alarm.setOnClickListener {
                     onClickListener?.onAlarmClick(drugDataModel)
-                }
-
-                drugs.setOnClickListener {
-                    onClickListener?.onDrugClick(drugDataModel)
                 }
 
                 openRecyclerView.setOnClickListener {

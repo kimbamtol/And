@@ -36,6 +36,12 @@ data class UserDataModel(
     val myEmail: String = ""
 )
 
+data class TimeLineDataModel(
+    val time: String = "",
+    val creationTime: Long = 0,
+    val context: String = ""
+)
+
 @kotlinx.parcelize.Parcelize
 data class FirebaseDbAlarmDataModel(
     val alarmCode: Int = 0,

@@ -9,21 +9,36 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.and.alarm.AlarmSettingFragment
 import com.and.R
 import com.and.databinding.FragmentAlarmShowBinding
 import com.and.datamodel.DrugDataModel
 import com.and.datamodel.FirebaseDbAlarmDataModel
+import com.and.viewModel.UserDataViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 class ShowAlarmFragment : DialogFragment() {
     private var _binding: FragmentAlarmShowBinding? = null
     private val binding get() = _binding!!
+    private val userDataViewModel: UserDataViewModel by activityViewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        CoroutineScope(Dispatchers.IO).launch {
+            if (userDataViewModel.getAlarmList().isEmpty()) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "마이페이지의 알람 불러오기를 클릭 해주세요!", Toast.LENGTH_SHORT).show()
+                    dismiss()
+                }
+            }
+        }
     }
 
     override fun onCreateView(
