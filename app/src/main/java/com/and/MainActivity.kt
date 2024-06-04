@@ -2,26 +2,42 @@ package com.and
 
 import android.os.Bundle
 import android.util.Log
-import android.os.Message
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.and.databinding.ActivityMainBinding
 import com.and.viewModel.UserDataViewModel
-import java.io.Serializable
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     private lateinit var dataViewModel: UserDataViewModel
     private val TAG = "MainActivity"
 
+    private var backPressedTime : Long = 0
+
+    private val callback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            if (System.currentTimeMillis() - backPressedTime < 2500) {
+                moveTaskToBack(true)
+                finishAndRemoveTask()
+                exitProcess(0)
+            }
+            Toast.makeText(this@MainActivity, "한번 더 클릭 시 종료 됩니다.", Toast.LENGTH_SHORT).show()
+            backPressedTime = System.currentTimeMillis()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         Log.d(TAG, "onCreate called")
+
+        this.onBackPressedDispatcher.addCallback(this, callback)
 
         dataViewModel = ViewModelProvider(this).get(UserDataViewModel::class.java)
 
@@ -56,7 +72,7 @@ class MainActivity : AppCompatActivity() {
                                     true
                                 }
                                 else -> {
-                                    val mypageFragment = MypageFragment()
+                                    val mypageFragment = MyPageFragment()
                                     changeFragment(mypageFragment)
                                     true
                                 }
@@ -68,6 +84,11 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "Failed to load data")
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        this.onBackPressedDispatcher.addCallback(this, callback)
     }
 
     private fun compareAndUpdateDrugs(responseList: ArrayList<ArrayList<String>>, productList: ArrayList<String>) {

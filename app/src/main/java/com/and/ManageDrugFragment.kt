@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
@@ -17,10 +18,13 @@ import com.and.adpater.CategoryListAdapter
 import com.and.databinding.FragmentManageDrugBinding
 import com.and.datamodel.DrugDataModel
 import com.and.dialogfragment.AddDrugDialogFragment
-import com.and.dialogfragment.DetailFragment
 import com.and.dialogfragment.SettingDrugDialogFragment
 import com.and.dialogfragment.ShowAlarmFragment
 import com.and.viewModel.UserDataViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ManageDrugFragment : Fragment() {
     private var _binding: FragmentManageDrugBinding? = null
@@ -46,17 +50,28 @@ class ManageDrugFragment : Fragment() {
             viewModel = userDataViewModel
             lifecycleOwner = requireActivity()
             categoryRecyclerView.itemAnimator = null
-            addDrugBtn.setOnClickListener {
-                val addDrugDialogFragment = AddDrugDialogFragment().apply {
-                    val bundle = Bundle()
-                    bundle.putParcelableArrayList("categoryList", ArrayList((categoryRecyclerView.adapter as CategoryListAdapter).currentList))
-                    arguments = bundle
-                }
 
-                addDrugDialogFragment.show(
-                    requireActivity().supportFragmentManager,
-                    "addDrug"
-                )
+            addDrugBtn.setOnClickListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (userDataViewModel.getAlarmList().isEmpty() && (userDataViewModel.drugInfos.value?: mutableListOf()).isNotEmpty()) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(requireContext(), "마이페이지의 알람 불러오기를 클릭 해주세요!", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                       withContext(Dispatchers.IO) {
+                           val addDrugDialogFragment = AddDrugDialogFragment().apply {
+                               val bundle = Bundle()
+                               bundle.putParcelableArrayList("categoryList", ArrayList((categoryRecyclerView.adapter as CategoryListAdapter).currentList))
+                               arguments = bundle
+                           }
+
+                           addDrugDialogFragment.show(
+                               requireActivity().supportFragmentManager,
+                               "addDrug"
+                           )
+                       }
+                    }
+                }
             }
 
             searchview.setOnQueryTextListener(object :
@@ -118,15 +133,6 @@ class ManageDrugFragment : Fragment() {
                             arguments = bundle
                         }
                         alarmSettingFragment.show(fragment.requireActivity().supportFragmentManager, "alarm")
-                    }
-
-                    override fun onDrugClick(drugDataModel: DrugDataModel) {
-                        val detailFragment = DetailFragment().apply {
-                            val bundle = Bundle()
-                            bundle.putParcelable("selectedCategory", drugDataModel)
-                            arguments = bundle
-                        }
-                        detailFragment.show(fragment.requireActivity().supportFragmentManager, "details")
                     }
                 }
                 recyclerView.adapter = adapter

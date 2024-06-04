@@ -52,15 +52,6 @@
                 app:layout_constraintEnd_toStartOf="@+id/alarm"/>
 
             <ImageView
-                android:id="@+id/drugs"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:src="@drawable/pill"
-                android:layout_marginEnd="10dp"
-                app:layout_constraintEnd_toStartOf="@+id/alarm"
-                app:layout_constraintTop_toTopOf="parent"/>
-
-            <ImageView
                 android:id="@+id/alarm"
                 android:layout_width="35dp"
                 android:layout_height="35dp"

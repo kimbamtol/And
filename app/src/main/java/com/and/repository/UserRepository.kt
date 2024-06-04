@@ -3,11 +3,11 @@ package com.and.repository
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.and.alarm.AlarmFunctions
 import com.and.datamodel.AlarmDao
 import com.and.datamodel.DrugDataModel
 import com.and.datamodel.FirebaseDbAlarmDataModel
 import com.and.datamodel.RoomDbAlarmDataModel
+import com.and.datamodel.TimeLineDataModel
 import com.and.datamodel.UserDataModel
 import com.and.setting.FBRef
 import com.and.setting.Setting
@@ -18,7 +18,6 @@ import com.google.firebase.database.getValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -37,6 +36,7 @@ class UserRepository(application: Application) {
     suspend fun observeUser(
         userInfo: MutableLiveData<UserDataModel>,
         drugInfos: MutableLiveData<MutableList<DrugDataModel>>,
+        timeLineInfos: MutableLiveData<HashMap<String, MutableList<TimeLineDataModel>>>,
         successGetData: MutableLiveData<Boolean>
     ) {
         try {
@@ -87,14 +87,38 @@ class UserRepository(application: Application) {
                     })
             }
 
+            val timeLineInfoJob = suspendCoroutine { continuation ->
+                userRef.child("timeLine")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            Log.d(TAG, "TimeLine dataSnapshot: $snapshot")  // 로그 추가
+                            var timeLines = HashMap<String, MutableList<TimeLineDataModel>>()
+                            if (snapshot.exists()) {
+                                timeLines = snapshot.getValue<HashMap<String, MutableList<TimeLineDataModel>>>()!!
+                            }
+                            continuation.resume(timeLines)
+                        }
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.e(TAG, "DatabaseError: $error")  // 로그 추가
+                            continuation.resume(hashMapOf<String, MutableList<TimeLineDataModel>>())
+                        }
+                    })
+            }
+
             userInfo.postValue(userInfoJob.await())
             drugInfos.postValue(drugInfoJob)
+            timeLineInfos.postValue(timeLineInfoJob)
             successGetData.postValue(true)
 
         } catch (e: Exception) {
             Log.e(TAG, "Exception in observeUser: ${e.message}")  // 예외 로그 추가
             successGetData.postValue(false)
         }
+    }
+
+    fun setUserInfo(name: String, birth: String) {
+        userRef.child("userInfo").child("name").setValue(name)
+        userRef.child("userInfo").child("birth").setValue(birth)
     }
 
     fun addCategory(drugInfo: DrugDataModel) {
@@ -122,16 +146,20 @@ class UserRepository(application: Application) {
             .setValue(removedDetailsCategory.details)
     }
 
+    fun addTimeLine(timeLineMap: HashMap<String, MutableList<TimeLineDataModel>>) {
+        userRef.child("timeLine").setValue(timeLineMap)
+    }
+
+    fun getAlarmList() : List<RoomDbAlarmDataModel> {
+        return alarmDao.getAlarmsList()
+    }
+
     fun addAlarm(alarm: RoomDbAlarmDataModel) {
         alarmDao.addAlarm(alarm)
     }
 
     fun deleteAlarm(alarmCode: Int) {
         alarmDao.deleteAlarm(alarmCode)
-    }
-
-    private fun getAll(): List<RoomDbAlarmDataModel> {
-        return alarmDao.getAlarmsList()
     }
 
     fun updateAlarmTime(code: Int, time: Long) {
@@ -147,6 +175,10 @@ class UserRepository(application: Application) {
             userRef.child("category").child(drugDataModel.category).child(alarmNames[i])
                 .setValue(alarmModels[i])
         }
+    }
+
+    fun deleteInfo() {
+        userRef.removeValue()
     }
 }
 

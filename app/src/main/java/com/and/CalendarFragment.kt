@@ -1,59 +1,175 @@
 package com.and
 
+import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import com.and.adpater.TimeLineListAdapter
+import com.and.databinding.FragmentCalendarBinding
+import com.and.datamodel.TimeLineDataModel
+import com.and.dialogfragment.WriteDialogFragment
+import com.and.setting.DayDecorator
+import com.and.setting.SaturdayDecorator
+import com.and.setting.SelectedMonthDecorator
+import com.and.setting.SundayDecorator
+import com.and.setting.TimeLineDayDecorator
+import com.and.viewModel.UserDataViewModel
+import com.prolificinteractive.materialcalendarview.CalendarDay
+import com.prolificinteractive.materialcalendarview.format.ArrayWeekDayFormatter
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [CalendarFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class CalendarFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private var _binding: FragmentCalendarBinding? = null
+    private val binding get() = _binding!!
+    private val userDataViewModel: UserDataViewModel by activityViewModels()
+    private var selectedDay = CalendarDay.today()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_calendar, container, false)
-    }
+    ): View {
+        _binding = FragmentCalendarBinding.inflate(inflater, container, false)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CalendarFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            CalendarFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        val dayDecorator = DayDecorator(requireContext())
+        val sundayDecorator = SundayDecorator()
+        val saturdayDecorator = SaturdayDecorator()
+        var selectedMonthDecorator = SelectedMonthDecorator(CalendarDay.today().month)
+        var timeLineDayDecorator = TimeLineDayDecorator(getTimeLineDay())
+
+
+        binding.apply {
+            val timeLineListAdapter = TimeLineListAdapter()
+            timeLineListAdapter.setOnLongClickListener = TimeLineListAdapter.SetOnLongClickListener {
+                val builder = AlertDialog.Builder(requireContext())
+                builder.setTitle("삭제하시겠습니까?")
+                val listener = DialogInterface.OnClickListener { _, ans ->
+                    when (ans) {
+                        DialogInterface.BUTTON_POSITIVE -> {
+                            val day = "${selectedDay.year}-${String.format("%02d", selectedDay.month)}-${String.format("%02d", selectedDay.day)}"
+                            userDataViewModel.removeTimeLine(day, it)
+                        }
+                    }
+                }
+                builder.setPositiveButton("네", listener)
+                builder.setNegativeButton("아니오", null)
+                builder.show()
+            }
+
+            val today = getDayText(selectedDay)
+            var timeLineOfToday = userDataViewModel.getTimeLine(today)
+            TimeLineRecyclerview.adapter = timeLineListAdapter
+            timeLineListAdapter.submitList(timeLineOfToday)
+
+            addTimeLineBtn.setOnClickListener {
+                val writeDialogFragment = WriteDialogFragment()
+                writeDialogFragment.clickYesListener = WriteDialogFragment.OnClickYesListener {
+                    selectedDay = CalendarDay.today()
+                    TimeLineCalendar.selectedDate = selectedDay
+                    val day = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                    val time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+                    val timeLineDataModel = TimeLineDataModel(time, System.currentTimeMillis(), it)
+                    userDataViewModel.addTimeLine(day, timeLineDataModel)
+                }
+                writeDialogFragment.show(requireActivity().supportFragmentManager, "timeLine")
+            }
+
+            TimeLineCalendar.apply {
+                selectedDate = selectedDay
+                setWeekDayFormatter(ArrayWeekDayFormatter(resources.getTextArray(R.array.custom_weekdays)))
+                state().edit().setMaximumDate(CalendarDay.today()).commit() // 최대 날짜 설정
+
+                addDecorators(
+                    dayDecorator,
+                    saturdayDecorator,
+                    sundayDecorator,
+                    selectedMonthDecorator,
+                    timeLineDayDecorator
+                )
+
+                setTitleFormatter { day -> // 년 월 표시 변경
+                    val inputText = day.date
+                    val calendarHeaderElements = inputText.toString().split("-").toMutableList()
+                    val calendarHeaderBuilder = StringBuilder()
+                    if (calendarHeaderElements[1][0] == '0') {
+                        calendarHeaderElements[1] = calendarHeaderElements[1].replace("0", "")
+                    }
+                    calendarHeaderBuilder.append(calendarHeaderElements[0]).append("년 ")
+                        .append(calendarHeaderElements[1]).append("월")
+                    calendarHeaderBuilder.toString()
+                }
+
+                setOnMonthChangedListener { _, date -> // 달 바꿀때
+                    val adapter = TimeLineRecyclerview.adapter as TimeLineListAdapter
+                    TimeLineCalendar.removeDecorators()
+                    TimeLineCalendar.invalidateDecorators() // 데코 초기화
+                    if (date.month == CalendarDay.today().month) {
+                        TimeLineCalendar.selectedDate =
+                            CalendarDay.today() // 현재 달로 바꿀 때 마다 현재 날짜 표시
+                        timeLineOfToday = userDataViewModel.getTimeLine(today)
+                        adapter.submitList(timeLineOfToday)
+                    } else {
+                        TimeLineCalendar.selectedDate = null
+                        adapter.submitList(mutableListOf())
+                    }
+
+                    selectedMonthDecorator = SelectedMonthDecorator(date.month)
+                    timeLineDayDecorator = TimeLineDayDecorator(getTimeLineDay())
+                    TimeLineCalendar.addDecorators(
+                        dayDecorator,
+                        saturdayDecorator,
+                        sundayDecorator,
+                        selectedMonthDecorator,
+                        timeLineDayDecorator
+                    ) //데코 설정
+                }
+
+                setOnDateChangedListener { _, date, _ -> // 날짜 킅릭시
+                    selectedDay = date
+                    val day = getDayText(selectedDay)
+                    val timeLineOfDay = userDataViewModel.getTimeLine(day)
+                    val adapter = TimeLineRecyclerview.adapter as TimeLineListAdapter
+                    adapter.submitList(timeLineOfDay.toMutableList())
                 }
             }
+
+            userDataViewModel.timeLineInfos.observe(requireActivity()) {
+                val day = getDayText(selectedDay)
+                val adapter = TimeLineRecyclerview.adapter as TimeLineListAdapter
+                adapter.submitList(it[day]?.toMutableList() ?: mutableListOf())
+                TimeLineCalendar.removeDecorator(timeLineDayDecorator)
+                timeLineDayDecorator = TimeLineDayDecorator(getTimeLineDay())
+                TimeLineCalendar.addDecorators(timeLineDayDecorator)
+            }
+        }
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    private fun getTimeLineDay(): MutableList<CalendarDay> {
+        val keys = userDataViewModel.timeLineInfos.value?.keys ?: mutableSetOf()
+        val timeLineDays = mutableListOf<CalendarDay>()
+        for (key in keys) {
+            val dayInfo = key.split("-")
+            val calendarDay = CalendarDay.from(dayInfo[0].toInt(), dayInfo[1].toInt(), dayInfo[2].toInt())
+            timeLineDays.add(calendarDay)
+        }
+
+        return timeLineDays
+    }
+
+    private fun getDayText(selectedDay: CalendarDay) : String {
+        return "${selectedDay.year}-${String.format("%02d", selectedDay.month)}-${String.format("%02d", selectedDay.day)}"
     }
 }

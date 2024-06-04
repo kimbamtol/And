@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import com.prolificinteractive.materialcalendarview.CalendarDay
 import java.util.Calendar
 
 class AlarmFunctions(private val context: Context?) {
@@ -29,15 +30,37 @@ class AlarmFunctions(private val context: Context?) {
                 receiverIntent,
                 PendingIntent.FLAG_IMMUTABLE
             )
-        val alarmClock = AlarmManager.AlarmClockInfo(time, pendingIntent)
+
+        val alarmClock = AlarmManager.AlarmClockInfo(getMatchAlarmTime(time), pendingIntent)
         alarmManager.setAlarmClock(alarmClock, pendingIntent)
     }
 
     fun cancelAlarm(alarmCode: Int) {
         val alarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, AlarmReceiver::class.java)
-        pendingIntent =
-            PendingIntent.getBroadcast(context, alarmCode, intent, PendingIntent.FLAG_IMMUTABLE)
+        pendingIntent = PendingIntent.getBroadcast(context, alarmCode, intent, PendingIntent.FLAG_IMMUTABLE)
         alarmManager.cancel(pendingIntent)
+    }
+
+    private fun getMatchAlarmTime(time: Long): Long {
+        val temp = Calendar.getInstance().apply {
+            timeInMillis = time
+        }
+
+        if (System.currentTimeMillis() < time) {
+            return temp.timeInMillis
+        }
+
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, temp.get(Calendar.HOUR_OF_DAY))
+            set(Calendar.MINUTE, temp.get(Calendar.MINUTE))
+            set(Calendar.SECOND, 0)
+        }
+
+        if (System.currentTimeMillis() > calendar.timeInMillis) {
+            calendar.add(Calendar.DATE, 1)
+        }
+
+        return calendar.timeInMillis
     }
 }

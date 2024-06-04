@@ -6,7 +6,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.and.databinding.ActivityLoginBinding
 import com.and.datamodel.UserDataModel
@@ -30,22 +32,35 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlin.system.exitProcess
 
 class LoginActivity : AppCompatActivity() {
     private var _binding: ActivityLoginBinding? = null
     private val binding get() = _binding!!
+    private lateinit var loginInfo: android.content.SharedPreferences
+
+    private var backPressedTime : Long = 0
+
+    private val callback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            if (System.currentTimeMillis() - backPressedTime < 2500) {
+                moveTaskToBack(true)
+                finishAndRemoveTask()
+                exitProcess(0)
+            }
+            Toast.makeText(this@LoginActivity, "한번 더 클릭 시 종료 됩니다.", Toast.LENGTH_SHORT).show()
+            backPressedTime = System.currentTimeMillis()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // HashKey확인
-        val keyHash = Utility.getKeyHash(this)
-        Log.e("Key", "keyHash: $keyHash")
+        this.onBackPressedDispatcher.addCallback(this, callback)
 
-        // Kakao SDK 초기화
-        KakaoSdk.init(this, this.getString(R.string.kakao_app_key))
+        loginInfo = getSharedPreferences("setting", MODE_PRIVATE)
 
         // 로그인 버튼 클릭 리스너 설정
         binding.btnStartKakaoLogin.setOnClickListener {
@@ -62,6 +77,11 @@ class LoginActivity : AppCompatActivity() {
         binding.tvNaverLogin.setOnClickListener {
             startNaverLogin()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        this.onBackPressedDispatcher.addCallback(this, callback)
     }
 
     private fun kakaoLogin() {
@@ -109,6 +129,8 @@ class LoginActivity : AppCompatActivity() {
 
                                     singInJob.await()
 
+                                    setAutoLogin(myEmail)
+
                                     Setting.email = myEmail
 
                                     val intent = Intent(this@LoginActivity, MainActivity::class.java)
@@ -154,6 +176,8 @@ class LoginActivity : AppCompatActivity() {
                                     }
 
                                     singInJob.await()
+
+                                    setAutoLogin(myEmail)
 
                                     Setting.email = myEmail
 
@@ -213,5 +237,11 @@ class LoginActivity : AppCompatActivity() {
         }else{
             binding.tvNaverLogin.visibility = View.VISIBLE
         }
+    }
+
+    private fun setAutoLogin(email: String) {
+        val editor = loginInfo.edit()
+        editor.putString("email",email)
+        editor.apply()
     }
 }
