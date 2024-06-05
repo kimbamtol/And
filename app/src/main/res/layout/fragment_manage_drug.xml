@@ -49,7 +49,19 @@
                 android:layout_height="wrap_content"
                 android:text="이미지인식"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/warningBtn"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/warningBtn"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/warning"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toStartOf="@id/searchDrugBtn"
+                app:layout_constraintHeight_percent="0.5"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
