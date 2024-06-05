@@ -34,14 +34,18 @@
             android:contentDescription="TODO"
             tools:ignore="ContentDescription,HardcodedText"/>
 
-        <!-- 텍스트 인식 결과를 표시할 텍스트 뷰 -->
-        <TextView
-            android:id="@+id/textViewResult"
+        <!-- 텍스트 인식 결과를 표시할 레이아웃 -->
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30sp"
-            android:text=""
-            android:textSize="20sp"/>
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:id="@+id/recognized_texts_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+        </ScrollView>
 
         <!-- 크롤링 시작 버튼 -->
         <Button
@@ -65,6 +69,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Start Compare"
+            android:layout_marginTop="16dp"/>
+
+        <!-- 저장 버튼 -->
+        <Button
+            android:id="@+id/save_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="저장"
             android:layout_marginTop="16dp"/>
 
     </androidx.appcompat.widget.LinearLayoutCompat>

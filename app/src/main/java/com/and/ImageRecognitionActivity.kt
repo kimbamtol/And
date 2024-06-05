@@ -1,8 +1,12 @@
 package com.and
-
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.ViewGroup.LayoutParams
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -17,16 +21,25 @@ class ImageRecognitionActivity : AppCompatActivity() {
     private lateinit var cameraLauncher: ActivityResultLauncher<Intent>
     private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
     private lateinit var cropImageLauncher: ActivityResultLauncher<CropImageContractOptions>
-    private lateinit var cameraActivityResult: ActivityResultLauncher<Intent>
-    private val recognizedTexts: MutableList<String> = mutableListOf()
+    private lateinit var recognizedTexts: MutableList<String>
+    private lateinit var recognizedTextsContainer: LinearLayout
+    private lateinit var saveButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityImageRecognitionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        recognizedTexts = mutableListOf()
+        recognizedTextsContainer = findViewById(R.id.recognized_texts_container)
+        saveButton = findViewById(R.id.save_button)
+
         setupButtonListeners()
         setupActivityLaunchers()
+
+        saveButton.setOnClickListener {
+            saveRecognizedTexts()
+        }
     }
 
     private fun setupButtonListeners() {
@@ -78,13 +91,31 @@ class ImageRecognitionActivity : AppCompatActivity() {
         val recognizer = TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
         recognizer.process(image)
             .addOnSuccessListener { visionText ->
-                recognizedTexts.add(visionText.text)
-                binding.textViewResult.text = visionText.text
-                binding.imageView.setImageURI(uri)
+                recognizedTexts = visionText.text.split("\n").toMutableList()
+                displayRecognizedTexts()
             }
             .addOnFailureListener { exception ->
-                binding.textViewResult.text = "Text recognition failed with exception: $exception"
+                Toast.makeText(this, "Text recognition failed: $exception", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun displayRecognizedTexts() {
+        recognizedTextsContainer.removeAllViews()
+        for (text in recognizedTexts) {
+            val editText = EditText(this).apply {
+                setText(text)
+                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            }
+            recognizedTextsContainer.addView(editText)
+        }
+    }
+
+    private fun saveRecognizedTexts() {
+        recognizedTexts.clear()
+        for (i in 0 until recognizedTextsContainer.childCount) {
+            val editText = recognizedTextsContainer.getChildAt(i) as EditText
+            recognizedTexts.add(editText.text.toString())
+        }
     }
 
     private fun startCrawlingActivity() {

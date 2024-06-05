@@ -64,7 +64,7 @@ class Crawling : AppCompatActivity() {
         }
 
         productList.forEachIndexed { index, productName ->
-            for (page in 1..10) {
+            for (page in 1..3) {
                 val call = service.getUsjntTabooInfoList(
                     serviceKey = apiKey,
                     pageNo = page,
@@ -109,10 +109,15 @@ class Crawling : AppCompatActivity() {
                 productNames.add(mainIngr)
             }
 
-            // Add parsed product names to the corresponding index in responseList
-            (responseList.elementAt(index)).addAll(productNames)
+            // Add parsed product names to the corresponding index in responseList safely
+            if (index < responseList.size) {
+                responseList.elementAtOrElse(index) { mutableListOf() }.addAll(productNames)
+            } else {
+                responseList.add(mutableListOf<String>().apply { addAll(productNames) })
+            }
         }
     }
+
 
     private fun checkPendingResponses() {
         pendingResponses--
