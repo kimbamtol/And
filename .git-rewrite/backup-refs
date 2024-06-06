@@ -1,0 +1,9 @@
+0b3ae1dca5c81c3d8d91199b2d46fb3143b57c0e commit	refs/heads/master
+0b3ae1dca5c81c3d8d91199b2d46fb3143b57c0e commit	refs/remotes/origin/HEAD
+0b3ae1dca5c81c3d8d91199b2d46fb3143b57c0e commit	refs/remotes/origin/master
+aee94f89a71446183b648fe510a620b495abf271 commit	refs/remotes/origin/testBranch
+cf8a23b2ffd415a783ac66e569db0be3354d7586 commit	refs/remotes/upstream/HEAD
+4d68fe95434c20fbbbfe3c85161381c31501ac42 commit	refs/remotes/upstream/Test1_MLKIT_JSOUP
+840df8afcf0bfa40f0db61a31ae67c7dc8589abc commit	refs/remotes/upstream/Test_Branch
+0c7f90c5fd364dbb55db60c8bbef515e3f229c10 commit	refs/remotes/upstream/login_X_Test
+cf8a23b2ffd415a783ac66e569db0be3354d7586 commit	refs/remotes/upstream/master

@@ -4,60 +4,54 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import com.and.R
+import com.and.adpater.SelectDetailListAdapter
+import com.and.databinding.FragmentDeleteDetailBinding
+import com.and.databinding.FragmentSelectDetailAddedBinding
 import com.and.datamodel.DrugDataModel
-import com.and.adpater.SelectCategoryListAdapter
-import com.and.databinding.FragmentSelectCategoryDialogBinding
+import com.and.setting.NetworkManager
 import com.and.viewModel.UserDataViewModel
 
-class SelectCategoryDialogFragment : DialogFragment() {
-    private var _binding: FragmentSelectCategoryDialogBinding? = null
+class SelectDetailAddedFragment : DialogFragment() {
+    private var _binding: FragmentSelectDetailAddedBinding? = null
     private val binding get() = _binding!!
-    private var selectedCategory = DrugDataModel()
-
+    private val selectList = mutableListOf<String>()
+    private val userDataViewModel: UserDataViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSelectCategoryDialogBinding.inflate(inflater, container, false)
-        val categoryList = arguments?.getParcelableArrayList("categoryList", DrugDataModel::class.java)?: arrayListOf()
+        _binding = FragmentSelectDetailAddedBinding.inflate(inflater, container, false)
+        val selectedCategory = arguments?.getParcelable("selectedCategory", DrugDataModel::class.java) ?: DrugDataModel()
+        val recognizedTexts = arguments?.getStringArrayList("recognizedTexts") ?: arrayListOf()
         binding.apply {
-            val adapter = SelectCategoryListAdapter(categoryList)
-            adapter.onItemClickListener = SelectCategoryListAdapter.OnItemClickListener {
-                if(selectedCategory == it) {
-                    selectedCategory = DrugDataModel()
+            val adapter = SelectDetailListAdapter(recognizedTexts)
+            adapter.onItemClickListener = SelectDetailListAdapter.OnItemClickListener {
+                if(selectList.contains(it)) {
+                    selectList.remove(it)
                     return@OnItemClickListener
                 }
-                selectedCategory = it
+                selectList.add(it)
             }
 
-            selectCategoryRecyclerView.adapter = adapter
+            TextRecognizedRecyclerView.adapter = adapter
 
-            selectCategoryBtn.setOnClickListener {
-                if (selectedCategory.category == "") {
-                    Toast.makeText(requireContext(), "카테고리를 선택 해주세요!", Toast.LENGTH_SHORT).show()
+            nextBtn.setOnClickListener {
+                if (!NetworkManager.checkNetworkState(requireContext())) {
                     return@setOnClickListener
                 }
-
-                val selectAddDetailWayFragment = SelectAddDetailWayFragment().apply {
-                    val bundle = Bundle()
-                    bundle.putParcelable("selectedCategory", selectedCategory)
-                    arguments = bundle
-                }
-                selectAddDetailWayFragment.show(requireActivity().supportFragmentManager, "selectWays")
+                userDataViewModel.addDetail(selectedCategory, selectList)
                 dismiss()
             }
         }
-
-        isCancelable = true
         this.dialog?.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         this.dialog?.window!!.setGravity(Gravity.BOTTOM)
         this.dialog?.window!!.attributes.y = 40

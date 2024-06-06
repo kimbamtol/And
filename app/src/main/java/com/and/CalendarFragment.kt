@@ -15,6 +15,7 @@ import com.and.databinding.FragmentCalendarBinding
 import com.and.datamodel.TimeLineDataModel
 import com.and.dialogfragment.WriteDialogFragment
 import com.and.setting.DayDecorator
+import com.and.setting.NetworkManager
 import com.and.setting.SaturdayDecorator
 import com.and.setting.SelectedMonthDecorator
 import com.and.setting.SundayDecorator
@@ -22,6 +23,10 @@ import com.and.setting.TimeLineDayDecorator
 import com.and.viewModel.UserDataViewModel
 import com.prolificinteractive.materialcalendarview.CalendarDay
 import com.prolificinteractive.materialcalendarview.format.ArrayWeekDayFormatter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -31,6 +36,18 @@ class CalendarFragment : Fragment() {
     private val binding get() = _binding!!
     private val userDataViewModel: UserDataViewModel by activityViewModels()
     private var selectedDay = CalendarDay.today()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        MainActivity.currentPage = "Calendar"
+        if (!NetworkManager.checkNetworkState(requireContext())) {
+            val builder = AlertDialog.Builder(requireContext())
+            builder.setTitle("인터넷을 연결해주세요!")
+            builder.setPositiveButton("네", null)
+            builder.setCancelable(false)
+            builder.show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,8 +63,23 @@ class CalendarFragment : Fragment() {
 
 
         binding.apply {
+            refresh.apply {
+                this.setOnRefreshListener {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        userDataViewModel.observeUser()
+                    }
+                }
+                userDataViewModel.successGetData.observe(requireActivity()) {
+                    refresh.isRefreshing = false
+                }
+            }
+
             val timeLineListAdapter = TimeLineListAdapter()
             timeLineListAdapter.setOnLongClickListener = TimeLineListAdapter.SetOnLongClickListener {
+                if (!NetworkManager.checkNetworkState(requireContext())) {
+                    return@SetOnLongClickListener
+                }
+
                 val builder = AlertDialog.Builder(requireContext())
                 builder.setTitle("삭제하시겠습니까?")
                 val listener = DialogInterface.OnClickListener { _, ans ->
@@ -69,6 +101,9 @@ class CalendarFragment : Fragment() {
             timeLineListAdapter.submitList(timeLineOfToday)
 
             addTimeLineBtn.setOnClickListener {
+                if (!NetworkManager.checkNetworkState(requireContext())) {
+                    return@setOnClickListener
+                }
                 val writeDialogFragment = WriteDialogFragment()
                 writeDialogFragment.clickYesListener = WriteDialogFragment.OnClickYesListener {
                     selectedDay = CalendarDay.today()

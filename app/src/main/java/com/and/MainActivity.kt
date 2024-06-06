@@ -5,10 +5,13 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.and.databinding.ActivityMainBinding
+import com.and.dialogfragment.LoadingDialogFragment
+import com.and.setting.NetworkManager
 import com.and.viewModel.UserDataViewModel
 import kotlin.system.exitProcess
 
@@ -31,6 +34,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    companion object {
+        var currentPage = "ManageDrug"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -39,46 +46,61 @@ class MainActivity : AppCompatActivity() {
 
         this.onBackPressedDispatcher.addCallback(this, callback)
 
+        val startFragment = ManageDrugFragment()
+        changeFragment(startFragment)
+
+        val loadingDialogFragment = LoadingDialogFragment()
+        loadingDialogFragment.show(supportFragmentManager, "loading")
+
+        binding.apply {
+            menuBn.run {
+                setOnItemSelectedListener { item ->
+                    when (item.itemId) {
+                        R.id.menu_manageDrug -> {
+                            val manageDrugFragment = ManageDrugFragment()
+                            changeFragment(manageDrugFragment)
+                            true
+                        }
+
+                        R.id.menu_Calendar -> {
+                            val calendarFragment = CalendarFragment()
+                            changeFragment(calendarFragment)
+                            true
+                        }
+
+                        else -> {
+                            val mypageFragment = MyPageFragment()
+                            changeFragment(mypageFragment)
+                            true
+                        }
+                    }
+                }
+            }
+        }
+
         dataViewModel = ViewModelProvider(this).get(UserDataViewModel::class.java)
 
         dataViewModel.successGetData.observe(this) { success ->
+            loadingDialogFragment.dismiss()
+
             if (success) {
                 Log.d(TAG, "Data loaded successfully")
                 binding.menuBn.visibility = View.VISIBLE
-                val startFragment = ManageDrugFragment()
-                changeFragment(startFragment)
 
-                val responseList = intent.getSerializableExtra("responseList") as? ArrayList<ArrayList<String>>
+                when (currentPage) {
+                    "ManageDrug" -> changeFragment(startFragment)
+                    "Calendar" -> changeFragment(CalendarFragment())
+                    "MyPage" -> changeFragment(MyPageFragment())
+                }
+
+                val responseList =
+                    intent.getSerializableExtra("responseList") as? ArrayList<ArrayList<String>>
                 val productList = intent.getStringArrayListExtra("productList")
                 Log.d(TAG, "Received responseList: $responseList and productList: $productList")
                 if (responseList != null && productList != null) {
                     compareAndUpdateDrugs(responseList, productList)
                 } else {
                     Log.d(TAG, "responseList or productList is null")
-                }
-
-                binding.apply {
-                    menuBn.run {
-                        setOnItemSelectedListener { item ->
-                            when(item.itemId) {
-                                R.id.menu_manageDrug -> {
-                                    val manageDrugFragment = ManageDrugFragment()
-                                    changeFragment(manageDrugFragment)
-                                    true
-                                }
-                                R.id.menu_Calendar -> {
-                                    val calendarFragment = CalendarFragment()
-                                    changeFragment(calendarFragment)
-                                    true
-                                }
-                                else -> {
-                                    val mypageFragment = MyPageFragment()
-                                    changeFragment(mypageFragment)
-                                    true
-                                }
-                            }
-                        }
-                    }
                 }
             } else {
                 Log.d(TAG, "Failed to load data")

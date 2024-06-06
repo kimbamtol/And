@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.and.databinding.ActivityLoginBinding
 import com.and.datamodel.UserDataModel
 import com.and.setting.FBRef
+import com.and.setting.NetworkManager
 import com.and.setting.Setting
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -64,6 +65,9 @@ class LoginActivity : AppCompatActivity() {
 
         // 로그인 버튼 클릭 리스너 설정
         binding.btnStartKakaoLogin.setOnClickListener {
+            if (!NetworkManager.checkNetworkState(this)) {
+                return@setOnClickListener
+            }
             kakaoLogin()
         }
 
@@ -75,6 +79,9 @@ class LoginActivity : AppCompatActivity() {
         setLayoutState(false)
 
         binding.tvNaverLogin.setOnClickListener {
+            if (!NetworkManager.checkNetworkState(this)) {
+                return@setOnClickListener
+            }
             startNaverLogin()
         }
     }

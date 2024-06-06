@@ -10,6 +10,7 @@ import com.and.datamodel.RoomDbAlarmDataModel
 import com.and.datamodel.TimeLineDataModel
 import com.and.datamodel.UserDataModel
 import com.and.setting.FBRef
+import com.and.setting.NetworkManager
 import com.and.setting.Setting
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -22,7 +23,7 @@ import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class UserRepository(application: Application) {
+class UserRepository(private val application: Application) {
     private val userRef = FBRef.userRef.child(Setting.email)
     private val alarmDao: AlarmDao
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
@@ -39,6 +40,11 @@ class UserRepository(application: Application) {
         timeLineInfos: MutableLiveData<HashMap<String, MutableList<TimeLineDataModel>>>,
         successGetData: MutableLiveData<Boolean>
     ) {
+        if(!NetworkManager.checkNetworkState(application)) {
+            successGetData.postValue(false)
+            return
+        }
+
         try {
             val userInfoJob = coroutineScope.async {
                 val dataSnapshot = userRef.child("userInfo").get().await()

@@ -22,6 +22,7 @@ import com.and.datamodel.DrugDataModel
 import com.and.datamodel.FirebaseDbAlarmDataModel
 import com.and.datamodel.RoomDbAlarmDataModel
 import com.and.dialogfragment.TimePickerBottomSheetFragment
+import com.and.setting.NetworkManager
 import com.and.viewModel.UserDataViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -66,6 +67,13 @@ class AlarmSettingFragment : Fragment() {
         super.onCreate(savedInstanceState)
         mainactivity = requireActivity() as MainActivity
         mainactivity.binding.menuBn.visibility = View.GONE
+        if (!NetworkManager.checkNetworkState(requireContext())) {
+            val builder = AlertDialog.Builder(requireContext())
+            builder.setTitle("인터넷을 연결해주세요!")
+            builder.setPositiveButton("네", null)
+            builder.setCancelable(false)
+            builder.show()
+        }
     }
 
     override fun onCreateView(
@@ -148,6 +156,10 @@ class AlarmSettingFragment : Fragment() {
             }
 
             saveAlarmBtn.setOnClickListener {
+                if(!NetworkManager.checkNetworkState(requireContext())) {
+                    return@setOnClickListener
+                }
+
                 val weeks = arrayListOf(
                     sunday.isChecked,
                     monday.isChecked,

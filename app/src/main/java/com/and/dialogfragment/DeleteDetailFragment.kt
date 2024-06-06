@@ -16,6 +16,7 @@ import androidx.fragment.app.activityViewModels
 import com.and.datamodel.DrugDataModel
 import com.and.adpater.SelectDetailListAdapter
 import com.and.databinding.FragmentDeleteDetailBinding
+import com.and.setting.NetworkManager
 import com.and.viewModel.UserDataViewModel
 
 class DeleteDetailFragment : DialogFragment() {
@@ -47,6 +48,9 @@ class DeleteDetailFragment : DialogFragment() {
                 val listener = DialogInterface.OnClickListener { _, ans ->
                     when (ans) {
                         DialogInterface.BUTTON_POSITIVE -> {
+                            if (!NetworkManager.checkNetworkState(requireContext())) {
+                                return@OnClickListener
+                            }
                             try {
                                 userDataViewModel.removeDetail(categoryInfo, removeList)
                             } catch (e: Exception) {
