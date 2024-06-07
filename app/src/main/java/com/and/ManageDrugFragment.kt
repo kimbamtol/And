@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
@@ -20,6 +21,7 @@ import com.and.datamodel.DrugDataModel
 import com.and.dialogfragment.AddDrugDialogFragment
 import com.and.dialogfragment.SettingDrugDialogFragment
 import com.and.dialogfragment.ShowAlarmFragment
+import com.and.setting.NetworkManager
 import com.and.viewModel.UserDataViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,9 +36,17 @@ class ManageDrugFragment : Fragment() {
     private lateinit var mainactivity: MainActivity
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MainActivity.currentPage = "ManageDrug"
         mainactivity = requireActivity() as MainActivity
         mainactivity.binding.menuBn.visibility = View.VISIBLE
         ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.POST_NOTIFICATIONS), 999)
+        if (!NetworkManager.checkNetworkState(requireContext())) {
+            val builder = AlertDialog.Builder(requireContext())
+            builder.setTitle("인터넷을 연결해주세요!")
+            builder.setPositiveButton("네", null)
+            builder.setCancelable(false)
+            builder.show()
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -49,6 +59,18 @@ class ManageDrugFragment : Fragment() {
             fragment = this@ManageDrugFragment
             viewModel = userDataViewModel
             lifecycleOwner = requireActivity()
+
+            refresh.apply {
+                this.setOnRefreshListener {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        userDataViewModel.observeUser()
+                    }
+                }
+                userDataViewModel.successGetData.observe(requireActivity()) {
+                    refresh.isRefreshing = false
+                }
+            }
+
             categoryRecyclerView.itemAnimator = null
 
             addDrugBtn.setOnClickListener {

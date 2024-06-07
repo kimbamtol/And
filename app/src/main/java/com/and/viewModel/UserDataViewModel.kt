@@ -42,6 +42,10 @@ class UserDataViewModel(application: Application) : AndroidViewModel(application
     val successGetData: LiveData<Boolean>
         get() = _successGetData
 
+    suspend fun observeUser() {
+        repository.observeUser(_userInfo, _drugInfos, _timeLineInfos, _successGetData)
+    }
+
     fun setUserInfo(name: String, birth: String) {
         try {
             val newUserInfo = UserDataModel(name, birth, _userInfo.value!!.myEmail)

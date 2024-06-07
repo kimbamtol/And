@@ -21,6 +21,7 @@ import com.and.datamodel.DrugDataModel
 import com.and.databinding.FragmentSettingDrugDialogBinding
 import com.and.datamodel.FirebaseDbAlarmDataModel
 import com.and.datamodel.RoomDbAlarmDataModel
+import com.and.setting.NetworkManager
 import com.and.viewModel.UserDataViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +55,9 @@ class SettingDrugDialogFragment : DialogFragment() {
                 val listener = DialogInterface.OnClickListener { _, ans ->
                     when (ans) {
                         DialogInterface.BUTTON_POSITIVE -> {
+                            if (!NetworkManager.checkNetworkState(requireContext())) {
+                                return@OnClickListener
+                            }
                             try {
                                 userDataViewModel.removeCategory(categoryInfo)
                                 val removeJob = CoroutineScope(Dispatchers.IO).launch {
@@ -79,6 +83,9 @@ class SettingDrugDialogFragment : DialogFragment() {
             }
 
             changeNameBtn.setOnClickListener {
+                if (!NetworkManager.checkNetworkState(requireContext())) {
+                    return@setOnClickListener
+                }
                 val writeDialogFragment = WriteDialogFragment()
                 writeDialogFragment.clickYesListener =
                     WriteDialogFragment.OnClickYesListener { categoryName ->

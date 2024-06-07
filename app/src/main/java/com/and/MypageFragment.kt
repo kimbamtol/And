@@ -18,6 +18,7 @@ import com.and.datamodel.DrugDataModel
 import com.and.datamodel.FirebaseDbAlarmDataModel
 import com.and.datamodel.RoomDbAlarmDataModel
 import com.and.dialogfragment.WriteUserInfoDialogFragment
+import com.and.setting.NetworkManager
 import com.and.setting.Setting
 import com.and.viewModel.UserDataViewModel
 import com.kakao.sdk.user.UserApiClient
@@ -36,6 +37,18 @@ class MyPageFragment : Fragment() {
 
     private lateinit var loginInfo: android.content.SharedPreferences
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        MainActivity.currentPage = "MyPage"
+        if (!NetworkManager.checkNetworkState(requireContext())) {
+            val builder = AlertDialog.Builder(requireContext())
+            builder.setTitle("인터넷을 연결해주세요!")
+            builder.setPositiveButton("네", null)
+            builder.setCancelable(false)
+            builder.show()
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -45,12 +58,25 @@ class MyPageFragment : Fragment() {
             viewModel = userDataViewModel
             lifecycleOwner = requireActivity()
 
+            refresh.apply {
+                this.setOnRefreshListener {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        userDataViewModel.observeUser()
+                    }
+                }
+                userDataViewModel.successGetData.observe(requireActivity()) {
+                    refresh.isRefreshing = false
+                }
+            }
             ManageUserInfoBtn.setOnClickListener {
                 val writeUserInfoDialogFragment = WriteUserInfoDialogFragment()
                 writeUserInfoDialogFragment.show(requireActivity().supportFragmentManager, "writeUserInfo")
             }
 
             GetAlarmInfoBtn.setOnClickListener {
+                if (!NetworkManager.checkNetworkState(requireContext())) {
+                    return@setOnClickListener
+                }
                 CoroutineScope(Dispatchers.IO).launch {
                     if (userDataViewModel.getAlarmList().isEmpty() && (userDataViewModel.drugInfos.value ?: mutableListOf()).isNotEmpty()) {
                         settingAlarms(userDataViewModel.drugInfos.value ?: mutableListOf())
@@ -74,6 +100,9 @@ class MyPageFragment : Fragment() {
             }
 
             LogoutBtn.setOnClickListener {
+                if (!NetworkManager.checkNetworkState(requireContext())) {
+                    return@setOnClickListener
+                }
                 val builder = AlertDialog.Builder(requireContext())
                 builder.setTitle("로그아웃 하시겠습니까?")
                 val listener = DialogInterface.OnClickListener { _, ans ->
@@ -106,6 +135,9 @@ class MyPageFragment : Fragment() {
             }
 
             RemoveAccountBtn.setOnClickListener {
+                if (!NetworkManager.checkNetworkState(requireContext())) {
+                    return@setOnClickListener
+                }
                 val builder = AlertDialog.Builder(requireContext())
                 builder.setTitle("정말로 탈퇴 하시겠습니까?")
                 val listener = DialogInterface.OnClickListener { _, ans ->

@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.and.MainActivity
 import com.and.databinding.FragmentWriteUserInfoDialogBinding
+import com.and.setting.NetworkManager
 import com.and.viewModel.UserDataViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -62,6 +63,9 @@ class WriteUserInfoDialogFragment : DialogFragment() {
             }
 
             finishButton.setOnClickListener {
+                if(!NetworkManager.checkNetworkState(requireContext())) {
+                    return@setOnClickListener
+                }
                 if (writeName.text.toString() == "" || writeBirth.text == "") {
                     return@setOnClickListener
                 }
