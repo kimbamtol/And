@@ -21,6 +21,7 @@ import com.and.datamodel.DrugDataModel
 import com.and.dialogfragment.AddDrugDialogFragment
 import com.and.dialogfragment.SettingDrugDialogFragment
 import com.and.dialogfragment.ShowAlarmFragment
+import com.and.dialogfragment.WarningFragment
 import com.and.setting.NetworkManager
 import com.and.viewModel.UserDataViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -72,6 +73,11 @@ class ManageDrugFragment : Fragment() {
             }
 
             categoryRecyclerView.itemAnimator = null
+
+            warningBtn.setOnClickListener {
+                val warningFragment = WarningFragment()
+                warningFragment.show(requireActivity().supportFragmentManager, "warning")
+            }
 
             addDrugBtn.setOnClickListener {
                 CoroutineScope(Dispatchers.IO).launch {
