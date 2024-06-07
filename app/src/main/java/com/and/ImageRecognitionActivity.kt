@@ -91,13 +91,27 @@ class ImageRecognitionActivity : AppCompatActivity() {
         val recognizer = TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
         recognizer.process(image)
             .addOnSuccessListener { visionText ->
-                recognizedTexts = visionText.text.split("\n").toMutableList()
+                //recognizedTexts = visionText.text.split("\n").toMutableList()
+                recognizedTexts = visionText.text.split("\n")
+                    .map { filterKoreanText(it) }// Apply filterKoreanText to each line
+                    .filter { it.isNotEmpty() } // Filter out empty lines
+                    .toMutableList()
                 displayRecognizedTexts()
             }
             .addOnFailureListener { exception ->
                 Toast.makeText(this, "Text recognition failed: $exception", Toast.LENGTH_SHORT).show()
             }
     }
+    private fun filterKoreanText(text: String): String {
+        // Remove parentheses and their content
+        var filteredText = text.replace(Regex("\\(.*?\\)|\\[.*?\\]|\\{.*?\\}"), "")
+        // Remove non-Korean characters and special symbols
+        filteredText = filteredText.replace(Regex("[^가-힣\\s]"), "")
+        // Collapse multiple spaces into a single space
+        filteredText = filteredText.replace(Regex("\\s+"), " ").trim()
+        return filteredText
+    }
+
 
     private fun displayRecognizedTexts() {
         recognizedTextsContainer.removeAllViews()
