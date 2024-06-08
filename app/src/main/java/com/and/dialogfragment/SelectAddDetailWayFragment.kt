@@ -129,8 +129,12 @@ class SelectAddDetailWayFragment : DialogFragment() {
         val recognizer = TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
         recognizer.process(image)
             .addOnSuccessListener { visionText ->
-                recognizedTexts = visionText.text.split("\n").toMutableList()
-                if(recognizedTexts[0] == "") {
+                recognizedTexts = visionText.text.split("\n")
+                    .map { filterKoreanText(it).trim() }// Apply filterKoreanText to each line
+                    .filter { it.isNotEmpty() } // Filter out empty lines
+                    .toMutableList()
+                
+                if(recognizedTexts.isEmpty()) {
                     Toast.makeText(requireContext(), "인식된 텍스트가 없어요.", Toast.LENGTH_SHORT).show()
                     loadingDialogFragment.dismiss()
                     return@addOnSuccessListener
@@ -151,5 +155,15 @@ class SelectAddDetailWayFragment : DialogFragment() {
                 loadingDialogFragment.dismiss()
                 Toast.makeText(requireContext(), "Text recognition failed: $exception", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun filterKoreanText(text: String): String {
+        // Remove parentheses and their content
+        var filteredText = text.replace(Regex("\\(.*?\\)|\\[.*?\\]|\\{.*?\\}"), "")
+        // Remove non-Korean characters and special symbols
+        filteredText = filteredText.replace(Regex("[^가-힣\\s]"), "")
+        // Collapse multiple spaces into a single space
+        filteredText = filteredText.replace(Regex("\\s+"), " ").trim()
+        return filteredText
     }
 }
