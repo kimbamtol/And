@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -54,7 +55,6 @@ class SelectAddDetailWayFragment : DialogFragment() {
     }
 
     private var cropImageLauncher = registerForActivityResult(CropImageContract()) { result ->
-        loadingDialogFragment.show(requireActivity().supportFragmentManager, "loading")
         result.uriContent?.let { uri -> performTextRecognition(uri) }
     }
 
@@ -125,6 +125,7 @@ class SelectAddDetailWayFragment : DialogFragment() {
     }
 
     private fun performTextRecognition(uri: Uri) {
+        loadingDialogFragment.show(requireActivity().supportFragmentManager, "loading")
         val image = InputImage.fromFilePath(requireContext(), uri)
         val recognizer = TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
         recognizer.process(image)
@@ -133,6 +134,12 @@ class SelectAddDetailWayFragment : DialogFragment() {
                     .map { filterKoreanText(it).trim() }// Apply filterKoreanText to each line
                     .filter { it.isNotEmpty() } // Filter out empty lines
                     .toMutableList()
+
+                val drugs = mutableListOf<String>()
+
+                recognizedTexts.forEach {
+                    drugs.add(it.replace(" ", ""))
+                }
                 
                 if(recognizedTexts.isEmpty()) {
                     Toast.makeText(requireContext(), "인식된 텍스트가 없어요.", Toast.LENGTH_SHORT).show()
@@ -144,7 +151,7 @@ class SelectAddDetailWayFragment : DialogFragment() {
                 selectDetailAddedFragment.apply {
                     val bundle = Bundle()
                     bundle.putParcelable("selectedCategory", selectedCategory)
-                    bundle.putStringArrayList("recognizedTexts", ArrayList(recognizedTexts))
+                    bundle.putStringArrayList("recognizedTexts", ArrayList(drugs))
                     arguments = bundle
                 }
                 loadingDialogFragment.dismiss()
