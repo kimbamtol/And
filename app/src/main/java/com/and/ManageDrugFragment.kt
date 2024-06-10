@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -14,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.and.adpater.CategoryListAdapter
 import com.and.databinding.FragmentManageDrugBinding
@@ -61,7 +63,17 @@ class ManageDrugFragment : Fragment() {
             viewModel = userDataViewModel
             lifecycleOwner = requireActivity()
 
+
             refresh.apply {
+                setOnChildScrollUpCallback { _, _ ->
+                    if(categoryRecyclerView.layoutManager != null) {
+                        val firstRecyclerViewItem = (categoryRecyclerView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                        return@setOnChildScrollUpCallback firstRecyclerViewItem > 0
+                    }
+
+                    false
+                }
+
                 this.setOnRefreshListener {
                     CoroutineScope(Dispatchers.IO).launch {
                         userDataViewModel.observeUser()
