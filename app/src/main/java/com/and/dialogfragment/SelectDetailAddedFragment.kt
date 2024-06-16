@@ -4,17 +4,16 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
-import com.and.R
+import com.and.WarningCrawling
 import com.and.adpater.SelectDetailListAdapter
-import com.and.databinding.FragmentDeleteDetailBinding
 import com.and.databinding.FragmentSelectDetailAddedBinding
 import com.and.datamodel.DrugDataModel
 import com.and.setting.NetworkManager
@@ -48,8 +47,48 @@ class SelectDetailAddedFragment : DialogFragment() {
                 if (!NetworkManager.checkNetworkState(requireContext())) {
                     return@setOnClickListener
                 }
-                userDataViewModel.addDetail(selectedCategory, selectList)
-                dismiss()
+
+                try {
+
+                    val loadingDialogFragment = LoadingDialogFragment()
+                    loadingDialogFragment.show(requireActivity().supportFragmentManager, "loading")
+
+                    val warningCrawling = WarningCrawling(selectList)
+                    warningCrawling.onSuccessListener =
+                        WarningCrawling.OnSuccessListener { productList, responseList ->
+                            val addList = mutableListOf<String>()
+
+                            productList.forEach {
+                                addList.add(it)
+                            }
+
+                            val warningList = mutableListOf<String>()
+                            loadingDialogFragment.dismiss()
+
+                            userDataViewModel.drugInfos.value?.forEach { category ->
+                                category.details.forEachIndexed { _, drugName ->
+                                    responseList.forEachIndexed { responseIndex, responseDrugList ->
+                                        responseDrugList.forEach { responseDrug ->
+                                            if (responseDrug.contains(drugName)) {
+                                                addList.remove(productList[responseIndex])
+                                                val warning =
+                                                    "$drugName <- 동시 복용 금지 -> ${productList[responseIndex]}"
+                                                warningList.add(warning)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            userDataViewModel.addWarningInfo(warningList)
+                            userDataViewModel.addDetail(selectedCategory, addList)
+                            dismiss()
+                        }
+
+                    warningCrawling.getWarningDrug()
+                }  catch (e: Exception) {
+                    return@setOnClickListener
+                }
             }
         }
         this.dialog?.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))

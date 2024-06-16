@@ -116,6 +116,16 @@ class SettingDrugDialogFragment : DialogFragment() {
                 dismiss()
             }
 
+            addDetailBtn.setOnClickListener {
+                val selectAddDetailWayFragment = SelectAddDetailWayFragment().apply {
+                    val bundle = Bundle()
+                    bundle.putParcelable("selectedCategory", categoryInfo)
+                    arguments = bundle
+                }
+                selectAddDetailWayFragment.show(requireActivity().supportFragmentManager, "selectWays")
+                dismiss()
+            }
+
             removeDetailBtn.setOnClickListener {
                 if(categoryInfo.details.isEmpty()) {
                     Toast.makeText(requireContext(), "Detail이 없어요!", Toast.LENGTH_SHORT).show()

@@ -72,7 +72,6 @@ class CheckAlarmActivity : AppCompatActivity() {
                     selectedList.add(it)
                 }
 
-                Log.d("savepoint", drugDataModel.category)
                 alarmRecyclerView.adapter = adapter
                 saveCheckInfoBtn.setOnClickListener {
                     if(drugDataModel.details.size == 0) {

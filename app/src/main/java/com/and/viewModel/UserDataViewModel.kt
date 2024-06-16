@@ -20,13 +20,14 @@ class UserDataViewModel(application: Application) : AndroidViewModel(application
     private val _userInfo = MutableLiveData<UserDataModel>()
     private val _drugInfos = MutableLiveData<MutableList<DrugDataModel>>()
     private val _timeLineInfos = MutableLiveData<HashMap<String, MutableList<TimeLineDataModel>>>()
+    private val _warningInfos = MutableLiveData<MutableList<String>>()
     private val _successGetData = MutableLiveData<Boolean>()
     private val TAG = "UserDataViewModel"  // 로그 태그 추가
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             Log.d(TAG, "Initializing UserDataViewModel")
-            repository.observeUser(_userInfo, _drugInfos, _timeLineInfos, _successGetData)
+            repository.observeUser(_userInfo, _drugInfos, _timeLineInfos, _warningInfos, _successGetData)
         }
     }
 
@@ -39,11 +40,14 @@ class UserDataViewModel(application: Application) : AndroidViewModel(application
     val timeLineInfos: LiveData<HashMap<String, MutableList<TimeLineDataModel>>>
         get() = _timeLineInfos
 
+    val warningInfos: LiveData<MutableList<String>>
+        get() = _warningInfos
+
     val successGetData: LiveData<Boolean>
         get() = _successGetData
 
     suspend fun observeUser() {
-        repository.observeUser(_userInfo, _drugInfos, _timeLineInfos, _successGetData)
+        repository.observeUser(_userInfo, _drugInfos, _timeLineInfos, _warningInfos, _successGetData)
     }
 
     fun setUserInfo(name: String, birth: String) {
@@ -116,18 +120,6 @@ class UserDataViewModel(application: Application) : AndroidViewModel(application
         repository.removeDetail(newList[categoryNum])
     }
 
-    fun updateDrugInfo(updatedDrugDataModel: DrugDataModel) {
-        Log.d(TAG, "Updating drug info: $updatedDrugDataModel")
-        val newList = _drugInfos.value!!.also {
-            val index = it.indexOfFirst { drugDataModel -> drugDataModel.category == updatedDrugDataModel.category }
-            if (index != -1) {
-                it[index] = updatedDrugDataModel
-            }
-        }
-        _drugInfos.postValue(newList)
-        repository.addDetail(updatedDrugDataModel)
-    }
-
     fun addTimeLine(day: String, timeLineDataModel: TimeLineDataModel) {
         val newMap = _timeLineInfos.value!!.also {
             if(!it.containsKey(day)) {
@@ -152,6 +144,22 @@ class UserDataViewModel(application: Application) : AndroidViewModel(application
 
     fun getTimeLine(day: String): List<TimeLineDataModel> {
         return (_timeLineInfos.value?.get(day)?.sortedBy { it.creationTime }) ?: mutableListOf()
+    }
+
+    fun addWarningInfo(warningList: MutableList<String>) {
+        val newList = _warningInfos.value!!.also {
+            it.addAll(warningList)
+        }
+        _warningInfos.postValue(newList.toMutableSet().toMutableList())
+        repository.addWarningInfo(newList.toMutableSet().toMutableList())
+    }
+
+    fun removeWarningInfo(warningInfo: String) {
+        val newList = _warningInfos.value!!.also {
+            it.remove(warningInfo)
+        }
+        _warningInfos.postValue(newList.toMutableSet().toMutableList())
+        repository.addWarningInfo(newList.toMutableSet().toMutableList())
     }
 
     fun getAlarmList(): List<RoomDbAlarmDataModel> {
