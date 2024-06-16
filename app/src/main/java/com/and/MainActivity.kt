@@ -88,20 +88,19 @@ class MainActivity : AppCompatActivity() {
                 binding.menuBn.visibility = View.VISIBLE
 
                 when (currentPage) {
-                    "ManageDrug" -> changeFragment(startFragment)
+                    "ManageDrug" -> {
+                        val builder = AlertDialog.Builder(this)
+                        builder.setTitle("우측 위의 경고 버튼을 클릭 하여\n복용 금지 예상 알약 리스트를 꼭 확인해주세요!")
+                        builder.setPositiveButton("네", null)
+                        builder.setCancelable(false)
+                        builder.show()
+                        changeFragment(startFragment)
+                    }
+
                     "Calendar" -> changeFragment(CalendarFragment())
                     "MyPage" -> changeFragment(MyPageFragment())
                 }
 
-                val responseList =
-                    intent.getSerializableExtra("responseList") as? ArrayList<ArrayList<String>>
-                val productList = intent.getStringArrayListExtra("productList")
-                Log.d(TAG, "Received responseList: $responseList and productList: $productList")
-                if (responseList != null && productList != null) {
-                    compareAndUpdateDrugs(responseList, productList)
-                } else {
-                    Log.d(TAG, "responseList or productList is null")
-                }
             } else {
                 Log.d(TAG, "Failed to load data")
             }
@@ -111,33 +110,6 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         this.onBackPressedDispatcher.addCallback(this, callback)
-    }
-
-    private fun compareAndUpdateDrugs(responseList: ArrayList<ArrayList<String>>, productList: ArrayList<String>) {
-        Log.d(TAG, "Comparing and updating drugs")
-        val drugInfos = dataViewModel.drugInfos.value
-        if (drugInfos.isNullOrEmpty()) {
-            Log.d(TAG, "drugInfos is null or empty")
-            return
-        }
-
-        drugInfos.forEach { category ->
-            Log.d(TAG, "Checking category: ${category.category}")
-            category.details.forEachIndexed { index, drugName ->
-                responseList.forEachIndexed { responseIndex, responseDrugList ->
-                    responseDrugList.forEach { responseDrug ->
-                        if (drugName == responseDrug) {
-                            Log.d(TAG, "Matching drug found: $drugName in category: ${category.category}")
-                            val updatedDrugName = "$drugName <- 동시 복용 금지 -> ${productList[responseIndex]}"
-                            category.details[index] = updatedDrugName
-                            dataViewModel.updateDrugInfo(category)
-                        } else {
-                            Log.d(TAG, "No match for: $drugName in category: ${category.category}")
-                        }
-                    }
-                }
-            }
-        }
     }
 
     fun changeFragment(fragment: Fragment) {

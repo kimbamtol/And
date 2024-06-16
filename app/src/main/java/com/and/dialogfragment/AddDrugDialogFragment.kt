@@ -62,21 +62,6 @@ class AddDrugDialogFragment : DialogFragment() {
                 writeDialogFragment.show(requireActivity().supportFragmentManager, "writeCategory")
                 dismiss()
             }
-
-
-            addDetailBtn.setOnClickListener {
-                val selectCategoryDialogFragment = SelectCategoryDialogFragment().apply {
-                    val bundle = Bundle()
-                    bundle.putParcelableArrayList("categoryList", categoryList)
-                    arguments = bundle
-                }
-
-                selectCategoryDialogFragment.show(
-                    requireActivity().supportFragmentManager,
-                    "selectCategory"
-                )
-                dismiss()
-            }
         }
         isCancelable = true
         this.dialog?.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))

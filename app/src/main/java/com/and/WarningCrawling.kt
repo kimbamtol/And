@@ -1,9 +1,6 @@
 package com.and
 
-import android.content.Intent
-import android.os.Bundle
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.JsonParser
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -13,38 +10,53 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
-import java.io.Serializable
 
-class Crawling : AppCompatActivity() {
-    private val TAG = "Crawling"
-    private lateinit var recognizedTexts: ArrayList<String>
+class WarningCrawling(private val recognizedTexts: MutableList<String>) {
+    interface PublicDataService {
+        @GET("/1471000/DURPrdlstInfoService03/getUsjntTabooInfoList03")
+        fun getUsjntTabooInfoList(
+            @Query("serviceKey") serviceKey: String,
+            @Query("pageNo") pageNo: Int,
+            @Query("numOfRows") numOfRows: Int,
+            @Query("type") type: String,
+            @Query("typeName") typeName: String,
+            @Query("itemName") itemName: String
+        ): Call<ResponseBody>
+    }
+
+    fun interface OnSuccessListener {
+        fun onSuccessGetData(productList: MutableList<String>, responseList: MutableSet<MutableList<String>>)
+    }
+
+    private val apiKey = "MVyZ7I0PmLzGvOmdu+dRPluZEK1tvBAagt70/uZZD5qbYD6nmJWeAmQfXq3Uuz7mMxGxfV35s4Ox7AiE0bPoQA=="
     private val productList: MutableList<String> = mutableListOf()
     private val responseList: MutableSet<MutableList<String>> = mutableSetOf()
+    private var retrofit: Retrofit
+    private var service: PublicDataService
 
     private var pendingResponses = 0
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_image_recognition)
+    var onSuccessListener: OnSuccessListener? = null
 
-        recognizedTexts = intent.getStringArrayListExtra("recognizedTexts") ?: arrayListOf()
-        productList.addAll(recognizedTexts)
+    init {
+        productList.apply {
+            addAll(recognizedTexts)
+            forEach { _ ->
+                responseList.add(mutableListOf())
+            }
+        }
 
-        val retrofit = Retrofit.Builder()
+        retrofit = Retrofit.Builder()
             .baseUrl("https://apis.data.go.kr")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        val service = retrofit.create(WarningCrawling.PublicDataService::class.java)
-        val apiKey = "MVyZ7I0PmLzGvOmdu+dRPluZEK1tvBAagt70/uZZD5qbYD6nmJWeAmQfXq3Uuz7mMxGxfV35s4Ox7AiE0bPoQA=="
+        service = retrofit.create(PublicDataService::class.java)
+    }
 
-        // Initialize responseList with empty lists for each product
-        productList.forEach { _ ->
-            responseList.add(mutableListOf())
-        }
-
+    fun getWarningDrug() {
         productList.forEachIndexed { index, productName ->
-            for (page in 1..3) {
+            for (page in 1..5) {
                 val call = service.getUsjntTabooInfoList(
                     serviceKey = apiKey,
                     pageNo = page,
@@ -60,16 +72,12 @@ class Crawling : AppCompatActivity() {
                     override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                         if (response.isSuccessful) {
                             val responseBody = response.body()?.string()
-                            Log.d(TAG, "Response for $productName: $responseBody")
                             parseAndAddProductNames(responseBody, index)
-                        } else {
-                            Log.e(TAG, "Request for $productName failed: ${response.code()}")
                         }
                         checkPendingResponses()
                     }
 
                     override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                        Log.e(TAG, "Request for $productName failed", t)
                         checkPendingResponses()
                     }
                 })
@@ -84,6 +92,9 @@ class Crawling : AppCompatActivity() {
             val items = bodyObject.getAsJsonArray("items")
 
             val productNames = mutableListOf<String>()
+            if (items == null)
+                return
+
             for (item in items) {
                 val mainIngr = item.asJsonObject.get("MIXTURE_ITEM_NAME").asString
                 productNames.add(mainIngr)
@@ -91,30 +102,17 @@ class Crawling : AppCompatActivity() {
 
             // Add parsed product names to the corresponding index in responseList safely
             if (index < responseList.size) {
-                responseList.elementAtOrElse(index) { mutableListOf() }.addAll(productNames)
+                responseList.elementAtOrElse(index) { mutableListOf() }.addAll(productNames.distinct())
             } else {
-                responseList.add(mutableListOf<String>().apply { addAll(productNames) })
+                responseList.add(mutableListOf<String>().apply { addAll(productNames.distinct()) })
             }
         }
     }
 
-
     private fun checkPendingResponses() {
         pendingResponses--
-        runOnUiThread {
-            navigateToMainActivity()
+        if (pendingResponses == 0) {
+            onSuccessListener?.onSuccessGetData(productList, responseList)
         }
-    }
-
-    private fun navigateToMainActivity() {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.putStringArrayListExtra("productList", ArrayList(productList))
-
-        val serializableResponseList = ArrayList(responseList.map { ArrayList(it) } as ArrayList<ArrayList<String>>)
-        intent.putExtra("responseList", serializableResponseList as Serializable)
-
-        Log.d(TAG, "Navigating to MainActivity with responseList: $responseList and productList: $productList")
-        startActivity(intent)
-        finish()
     }
 }

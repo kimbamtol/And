@@ -63,12 +63,11 @@ class ManageDrugFragment : Fragment() {
             viewModel = userDataViewModel
             lifecycleOwner = requireActivity()
 
-
             refresh.apply {
                 setOnChildScrollUpCallback { _, _ ->
-                    if(categoryRecyclerView.layoutManager != null) {
-                        val firstRecyclerViewItem = (categoryRecyclerView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-                        return@setOnChildScrollUpCallback firstRecyclerViewItem > 0
+                    if((categoryRecyclerView.adapter as CategoryListAdapter).currentList.isNotEmpty()) {
+                        val firstRecyclerViewItem = (categoryRecyclerView.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition()
+                        return@setOnChildScrollUpCallback firstRecyclerViewItem != 0
                     }
 
                     false
@@ -91,14 +90,14 @@ class ManageDrugFragment : Fragment() {
                 warningFragment.show(requireActivity().supportFragmentManager, "warning")
             }
 
-            addDrugBtn.setOnClickListener {
+            addCategoryBtn.setOnClickListener {
                 CoroutineScope(Dispatchers.IO).launch {
                     if (userDataViewModel.getAlarmList().isEmpty() && (userDataViewModel.drugInfos.value?: mutableListOf()).isNotEmpty()) {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(requireContext(), "마이페이지의 알람 불러오기를 클릭 해주세요!", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                       withContext(Dispatchers.IO) {
+                       withContext(Dispatchers.Main) {
                            val addDrugDialogFragment = AddDrugDialogFragment().apply {
                                val bundle = Bundle()
                                bundle.putParcelableArrayList("categoryList", ArrayList((categoryRecyclerView.adapter as CategoryListAdapter).currentList))
@@ -134,11 +133,6 @@ class ManageDrugFragment : Fragment() {
                     searchview.visibility = View.GONE
                     interval1.visibility = View.GONE
                 }
-            }
-
-            buttonToNext.setOnClickListener {
-                val intent = Intent(requireActivity(), ImageRecognitionActivity::class.java)
-                startActivity(intent)
             }
             return binding.root
         }

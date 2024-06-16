@@ -38,6 +38,7 @@ class UserRepository(private val application: Application) {
         userInfo: MutableLiveData<UserDataModel>,
         drugInfos: MutableLiveData<MutableList<DrugDataModel>>,
         timeLineInfos: MutableLiveData<HashMap<String, MutableList<TimeLineDataModel>>>,
+        warningInfos: MutableLiveData<MutableList<String>>,
         successGetData: MutableLiveData<Boolean>
     ) {
         if(!NetworkManager.checkNetworkState(application)) {
@@ -111,9 +112,27 @@ class UserRepository(private val application: Application) {
                     })
             }
 
+            val warningInfoJob = suspendCoroutine { continuation ->
+                userRef.child("warning")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            var warnings = mutableListOf<String>()
+                            if (snapshot.exists()) {
+                                warnings = snapshot.getValue<MutableList<String>>()!!
+                            }
+                            continuation.resume(warnings)
+                        }
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.e(TAG, "DatabaseError: $error")  // 로그 추가
+                            continuation.resume(mutableListOf<String>())
+                        }
+                    })
+            }
+
             userInfo.postValue(userInfoJob.await())
             drugInfos.postValue(drugInfoJob)
             timeLineInfos.postValue(timeLineInfoJob)
+            warningInfos.postValue(warningInfoJob)
             successGetData.postValue(true)
 
         } catch (e: Exception) {
@@ -154,6 +173,10 @@ class UserRepository(private val application: Application) {
 
     fun addTimeLine(timeLineMap: HashMap<String, MutableList<TimeLineDataModel>>) {
         userRef.child("timeLine").setValue(timeLineMap)
+    }
+
+    fun addWarningInfo(warningList: MutableList<String>) {
+        userRef.child("warning").setValue(warningList)
     }
 
     fun getAlarmList() : List<RoomDbAlarmDataModel> {

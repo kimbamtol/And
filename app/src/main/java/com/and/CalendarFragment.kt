@@ -1,15 +1,17 @@
 package com.and
 
+import android.annotation.SuppressLint
 import android.content.DialogInterface
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnChildScrollUpCallback
 import com.and.adpater.TimeLineListAdapter
 import com.and.databinding.FragmentCalendarBinding
 import com.and.datamodel.TimeLineDataModel
@@ -22,11 +24,11 @@ import com.and.setting.SundayDecorator
 import com.and.setting.TimeLineDayDecorator
 import com.and.viewModel.UserDataViewModel
 import com.prolificinteractive.materialcalendarview.CalendarDay
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView
 import com.prolificinteractive.materialcalendarview.format.ArrayWeekDayFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -49,6 +51,7 @@ class CalendarFragment : Fragment() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -73,6 +76,8 @@ class CalendarFragment : Fragment() {
                     refresh.isRefreshing = false
                 }
             }
+
+            TimeLineCalendar.isPagingEnabled = false
 
             val timeLineListAdapter = TimeLineListAdapter()
             timeLineListAdapter.setOnLongClickListener = TimeLineListAdapter.SetOnLongClickListener {

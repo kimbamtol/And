@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import com.and.CameraActivity
+import com.and.WarningCrawling
 import com.and.databinding.FragmentSelectAddDetailWayBinding
 import com.and.datamodel.DrugDataModel
 import com.and.setting.NetworkManager
@@ -71,12 +72,42 @@ class SelectAddDetailWayFragment : DialogFragment() {
                     if (!NetworkManager.checkNetworkState(requireContext())) {
                         return@OnClickYesListener
                     }
+
                     try {
-                        userDataViewModel.addDetail(selectedCategory, listOf(it))
+                        loadingDialogFragment.show(requireActivity().supportFragmentManager, "loading")
+
+                        val warningCrawling = WarningCrawling(mutableListOf(it))
+                        warningCrawling.onSuccessListener = WarningCrawling.OnSuccessListener { productList, responseList ->
+                            val addList = mutableListOf<String>()
+
+                            productList.forEach { drug ->
+                                addList.add(drug)
+                            }
+
+                            val warningList = mutableListOf<String>()
+                            loadingDialogFragment.dismiss()
+
+                            userDataViewModel.drugInfos.value?.forEach { category ->
+                                category.details.forEachIndexed { _, drugName ->
+                                    responseList.forEachIndexed { responseIndex, responseDrugList ->
+                                        responseDrugList.forEach { responseDrug ->
+                                            if (responseDrug.contains(drugName)) {
+                                                addList.remove(productList[responseIndex])
+                                                val warning = "$drugName <- 동시 복용 금지 -> ${productList[responseIndex]}"
+                                                warningList.add(warning)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            userDataViewModel.addWarningInfo(warningList)
+                            userDataViewModel.addDetail(selectedCategory, addList)
+                            dismiss()
+                        }
+                        warningCrawling.getWarningDrug()
                     } catch (e: Exception) {
                         return@OnClickYesListener
-                    } finally {
-                        dismiss()
                     }
                 }
                 writeDialogFragment.show(requireActivity().supportFragmentManager, "writeDetail")
