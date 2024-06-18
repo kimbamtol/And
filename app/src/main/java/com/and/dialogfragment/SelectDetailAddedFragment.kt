@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import com.and.WarningCrawling
@@ -57,7 +58,6 @@ class SelectDetailAddedFragment : DialogFragment() {
                     warningCrawling.onSuccessListener =
                         WarningCrawling.OnSuccessListener { productList, responseList ->
                             val addList = mutableListOf<String>()
-
                             productList.forEach {
                                 addList.add(it)
                             }
@@ -82,6 +82,13 @@ class SelectDetailAddedFragment : DialogFragment() {
 
                             userDataViewModel.addWarningInfo(warningList)
                             userDataViewModel.addDetail(selectedCategory, addList)
+
+                            val builder = AlertDialog.Builder(requireContext())
+                            builder.setTitle("우측 위의 경고 버튼을 클릭 하여\n복용 금지 예상 알약 리스트를 꼭 확인해주세요!")
+                            builder.setPositiveButton("네", null)
+                            builder.setCancelable(false)
+                            builder.show()
+
                             dismiss()
                         }
 
