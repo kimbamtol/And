@@ -2,10 +2,13 @@ package com.and
 
 import android.util.Log
 import com.google.gson.JsonParser
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,7 +33,7 @@ class WarningCrawling(private val recognizedTexts: MutableList<String>) {
     }
 
     fun interface OnSuccessListener {
-        fun onSuccessGetData(productList: MutableList<String>, responseList: MutableSet<MutableList<String>>)
+        fun onSuccessGetData(success: Boolean, productList: MutableList<String>, responseList: MutableSet<MutableList<String>>)
     }
 
     private val apiKey = "MVyZ7I0PmLzGvOmdu+dRPluZEK1tvBAagt70/uZZD5qbYD6nmJWeAmQfXq3Uuz7mMxGxfV35s4Ox7AiE0bPoQA=="
@@ -59,31 +62,39 @@ class WarningCrawling(private val recognizedTexts: MutableList<String>) {
 
     fun getWarningDrug() {
         val jobs = mutableListOf<Job>()
-        CoroutineScope(Dispatchers.IO).launch {
+        val parentJob = SupervisorJob()
+        CoroutineScope(Dispatchers.IO + parentJob).launch {
             productList.forEachIndexed { index, productName ->
                 jobs += async {
-                    for (page in 1..3) {
-                        val response = service.getUsjntTabooInfoList(
-                            serviceKey = apiKey,
-                            pageNo = page,
-                            numOfRows = 100,
-                            type = "json",
-                            typeName = "병용금기",
-                            itemName = productName
-                        ).execute()
+                    try {
+                        for (page in 1..3) {
+                            val response = service.getUsjntTabooInfoList(
+                                serviceKey = apiKey,
+                                pageNo = page,
+                                numOfRows = 100,
+                                type = "json",
+                                typeName = "병용금기",
+                                itemName = productName
+                            ).execute()
 
-                        if (response.isSuccessful) {
-                            val responseBody = response.body()?.string()
-                            parseAndAddProductNames(responseBody, index)
+                            if (response.isSuccessful) {
+                                val responseBody = response.body()?.string()
+                                parseAndAddProductNames(responseBody, index)
+                            }
                         }
+                    } catch (e: Exception) {
+                        parentJob.cancel(CancellationException("예외가 발생하여 모든 작업을 취소합니다", e))
                     }
                 }
             }
 
-            jobs.joinAll()
-
-            withContext(Dispatchers.Main) {
-                onSuccessListener?.onSuccessGetData(productList, responseList)
+            try {
+                jobs.joinAll()
+                withContext(Dispatchers.Main) {
+                    onSuccessListener?.onSuccessGetData(true, productList, responseList)
+                }
+            } catch (e: CancellationException) {
+                onSuccessListener?.onSuccessGetData(false, productList, responseList)
             }
         }
     }
