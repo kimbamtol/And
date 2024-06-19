@@ -61,7 +61,6 @@ class SelectDetailAddedFragment : DialogFragment() {
                             productList.forEach {
                                 addList.add(it)
                             }
-
                             val warningList = mutableListOf<String>()
                             loadingDialogFragment.dismiss()
 
