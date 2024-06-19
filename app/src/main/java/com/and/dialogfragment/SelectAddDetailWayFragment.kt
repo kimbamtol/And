@@ -77,7 +77,13 @@ class SelectAddDetailWayFragment : DialogFragment() {
                         loadingDialogFragment.show(requireActivity().supportFragmentManager, "loading")
 
                         val warningCrawling = WarningCrawling(mutableListOf(it))
-                        warningCrawling.onSuccessListener = WarningCrawling.OnSuccessListener { productList, responseList ->
+                        warningCrawling.onSuccessListener = WarningCrawling.OnSuccessListener { success, productList, responseList ->
+                            loadingDialogFragment.dismiss()
+
+                            if(!success) {
+                                return@OnSuccessListener
+                            }
+
                             val addList = mutableListOf<String>()
 
                             productList.forEach { drug ->
@@ -85,7 +91,6 @@ class SelectAddDetailWayFragment : DialogFragment() {
                             }
 
                             val warningList = mutableListOf<String>()
-                            loadingDialogFragment.dismiss()
 
                             userDataViewModel.drugInfos.value?.forEach { category ->
                                 category.details.forEachIndexed { _, drugName ->

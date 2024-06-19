@@ -1,5 +1,6 @@
 package com.and.dialogfragment
 
+import android.content.DialogInterface
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -50,19 +51,23 @@ class SelectDetailAddedFragment : DialogFragment() {
                 }
 
                 try {
-
                     val loadingDialogFragment = LoadingDialogFragment()
                     loadingDialogFragment.show(requireActivity().supportFragmentManager, "loading")
 
                     val warningCrawling = WarningCrawling(selectList)
-                    warningCrawling.onSuccessListener =
-                        WarningCrawling.OnSuccessListener { productList, responseList ->
+                    warningCrawling.onSuccessListener = WarningCrawling.OnSuccessListener { success, productList, responseList ->
+                            loadingDialogFragment.dismiss()
+
+                            if (!success) {
+                                return@OnSuccessListener
+                            }
+
                             val addList = mutableListOf<String>()
                             productList.forEach {
                                 addList.add(it)
                             }
+
                             val warningList = mutableListOf<String>()
-                            loadingDialogFragment.dismiss()
 
                             userDataViewModel.drugInfos.value?.forEach { category ->
                                 category.details.forEachIndexed { _, drugName ->
