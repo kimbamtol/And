@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         loadingDialogFragment.show(supportFragmentManager, "loading")
 
         binding.apply {
-            menuBn.run {
+            menuBn.apply {
                 setOnItemSelectedListener { item ->
                     when (item.itemId) {
                         R.id.menu_manageDrug -> {
@@ -73,6 +73,16 @@ class MainActivity : AppCompatActivity() {
                             changeFragment(mypageFragment)
                             true
                         }
+                    }
+                }
+
+                setOnItemReselectedListener { item ->
+                    when (item.itemId) {
+                        R.id.menu_manageDrug -> { }
+
+                        R.id.menu_Calendar -> { }
+
+                        else -> { }
                     }
                 }
             }
