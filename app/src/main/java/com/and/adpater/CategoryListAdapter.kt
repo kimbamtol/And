@@ -26,7 +26,7 @@ class CategoryListAdapter: ListAdapter<DrugDataModel, CategoryListAdapter.Catego
         RecyclerView.ViewHolder(binding.root) {
         fun bind(drugDataModel: DrugDataModel) {
             binding.apply {
-                binding.category = drugDataModel
+                binding.categoryName.text = drugDataModel.category
 
                 val adapter = DetailListAdapter(drugDataModel.details)
                 detailRecyclerView.adapter = adapter
