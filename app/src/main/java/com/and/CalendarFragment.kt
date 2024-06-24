@@ -106,7 +106,7 @@ class CalendarFragment : Fragment() {
             timeLineListAdapter.submitList(timeLineOfToday)
 
             addTimeLineBtn.setOnClickListener {
-                if (!NetworkManager.checkNetworkState(requireContext())) {
+                if (!NetworkManager.checkNetworkState(requireContext()) || !userDataViewModel.successGetData.value!!) {
                     return@setOnClickListener
                 }
                 val writeDialogFragment = WriteDialogFragment()
