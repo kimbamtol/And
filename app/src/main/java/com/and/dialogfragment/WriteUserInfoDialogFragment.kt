@@ -63,7 +63,7 @@ class WriteUserInfoDialogFragment : DialogFragment() {
             }
 
             finishButton.setOnClickListener {
-                if(!NetworkManager.checkNetworkState(requireContext())) {
+                if(!NetworkManager.checkNetworkState(requireContext()) || !userDataViewModel.successGetData.value!!) {
                     return@setOnClickListener
                 }
                 if (writeName.text.toString() == "" || writeBirth.text == "") {

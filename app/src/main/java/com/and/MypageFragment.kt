@@ -74,7 +74,7 @@ class MyPageFragment : Fragment() {
             }
 
             GetAlarmInfoBtn.setOnClickListener {
-                if (!NetworkManager.checkNetworkState(requireContext())) {
+                if (!NetworkManager.checkNetworkState(requireContext()) || !userDataViewModel.successGetData.value!!) {
                     return@setOnClickListener
                 }
                 CoroutineScope(Dispatchers.IO).launch {
@@ -100,7 +100,7 @@ class MyPageFragment : Fragment() {
             }
 
             LogoutBtn.setOnClickListener {
-                if (!NetworkManager.checkNetworkState(requireContext())) {
+                if (!NetworkManager.checkNetworkState(requireContext()) || !userDataViewModel.successGetData.value!!) {
                     return@setOnClickListener
                 }
                 val builder = AlertDialog.Builder(requireContext())
@@ -135,7 +135,7 @@ class MyPageFragment : Fragment() {
             }
 
             RemoveAccountBtn.setOnClickListener {
-                if (!NetworkManager.checkNetworkState(requireContext())) {
+                if (!NetworkManager.checkNetworkState(requireContext()) || !userDataViewModel.successGetData.value!!) {
                     return@setOnClickListener
                 }
                 val builder = AlertDialog.Builder(requireContext())

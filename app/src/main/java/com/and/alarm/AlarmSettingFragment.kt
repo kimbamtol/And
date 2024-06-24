@@ -156,7 +156,7 @@ class AlarmSettingFragment : Fragment() {
             }
 
             saveAlarmBtn.setOnClickListener {
-                if(!NetworkManager.checkNetworkState(requireContext())) {
+                if(!NetworkManager.checkNetworkState(requireContext()) || !userDataViewModel.successGetData.value!!) {
                     return@setOnClickListener
                 }
 
