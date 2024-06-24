@@ -55,6 +55,8 @@ class UserRepository(private val application: Application) {
 
             userRef.child("userInfo").get().addOnSuccessListener {
                 userInfoJob.complete(it.getValue(UserDataModel::class.java)?: UserDataModel())
+            }.addOnFailureListener {
+                userInfoJob.complete(UserDataModel())
             }
 
 
