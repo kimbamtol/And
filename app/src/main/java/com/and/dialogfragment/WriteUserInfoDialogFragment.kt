@@ -101,7 +101,7 @@ class WriteUserInfoDialogFragment : DialogFragment() {
         val currentDate = Calendar.getInstance()
 
         val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
-        val birthDate = dateFormat.parse(date)
+        val birthDate = dateFormat.parse(date) ?: return -1
         val calBirthDate = Calendar.getInstance().apply { time = birthDate }
 
         var age = currentDate.get(Calendar.YEAR) - calBirthDate.get(Calendar.YEAR)

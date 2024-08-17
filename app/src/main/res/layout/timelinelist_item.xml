@@ -36,7 +36,7 @@
             app:layout_constraintWidth_percent="0.175" />
 
         <TextView
-            android:id="@+id/context"
+            android:id="@+id/detail_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="15dp"
