@@ -5,10 +5,6 @@
     <string name="camera">Camera</string>
     <string name="take_photo">Take Photo</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="kakao_app_key">821b68e0219f434c6da893e99d4c4d60</string>
-    <string name="kakao_app_key2">kakao821b68e0219f434c6da893e99d4c4d60</string>
-    <string name="social_login_info_naver_client_id">Ua317OL0iPfRGoP2eUJn</string>
-    <string name="social_login_info_naver_client_secret">MJhbch2S2w</string>
     <string name="social_login_info_naver_client_name">네이버아이디 로그인</string>
 
     <string-array name="custom_weekdays">

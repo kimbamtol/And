@@ -37,7 +37,7 @@ class WriteUserInfoDialogFragment : DialogFragment() {
 
             writeBirth.setOnClickListener {
                 val cal = Calendar.getInstance()
-                val dateCallback = DatePickerDialog.OnDateSetListener { view, year, month, day ->
+                val dateCallback = DatePickerDialog.OnDateSetListener { _, year, month, day ->
                     val birth = "${year}/${month + 1}/${day}"
                     if (getAge(birth) == -1) {
                         Toast.makeText(requireContext(), "올바른 생일을 입력 해주세요!", Toast.LENGTH_SHORT).show()
