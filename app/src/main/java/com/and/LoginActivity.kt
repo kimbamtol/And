@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.and.databinding.ActivityLoginBinding
 import com.and.datamodel.UserDataModel
@@ -18,9 +17,7 @@ import com.and.setting.Setting
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import com.kakao.sdk.common.util.Utility
 import com.kakao.sdk.auth.model.OAuthToken
-import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
@@ -70,11 +67,6 @@ class LoginActivity : AppCompatActivity() {
             }
             kakaoLogin()
         }
-
-        val naverClientId = getString(R.string.social_login_info_naver_client_id)
-        val naverClientSecret = getString(R.string.social_login_info_naver_client_secret)
-        val naverClientName = getString(R.string.social_login_info_naver_client_name)
-        NaverIdLoginSDK.initialize(this, naverClientId, naverClientSecret , naverClientName)
 
         setLayoutState(false)
 
@@ -162,7 +154,6 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun startNaverLogin(){
-        var naverToken :String? = ""
         setLayoutState(true)
         setLogin(true)
 
@@ -210,7 +201,7 @@ class LoginActivity : AppCompatActivity() {
                 val errorCode = NaverIdLoginSDK.getLastErrorCode().code
                 val errorDescription = NaverIdLoginSDK.getLastErrorDescription()
                 Toast.makeText(this@LoginActivity, "errorCode: ${errorCode}\n" +
-                        "errorDescription: ${errorDescription}", Toast.LENGTH_SHORT).show()
+                        "errorDescription: $errorDescription", Toast.LENGTH_SHORT).show()
             }
             override fun onError(errorCode: Int, message: String) {
                 onFailure(errorCode, message)
@@ -219,7 +210,6 @@ class LoginActivity : AppCompatActivity() {
 
         val oauthLoginCallback = object : OAuthLoginCallback {
             override fun onSuccess() {
-                naverToken = NaverIdLoginSDK.getAccessToken()
                 //로그인 유저 정보 가져오기
                 NidOAuthLogin().callProfileApi(profileCallback)
             }
@@ -229,7 +219,7 @@ class LoginActivity : AppCompatActivity() {
                 val errorCode = NaverIdLoginSDK.getLastErrorCode().code
                 val errorDescription = NaverIdLoginSDK.getLastErrorDescription()
                 Toast.makeText(this@LoginActivity, "errorCode: ${errorCode}\n" +
-                        "errorDescription: ${errorDescription}", Toast.LENGTH_SHORT).show()
+                        "errorDescription: $errorDescription", Toast.LENGTH_SHORT).show()
             }
             override fun onError(errorCode: Int, message: String) {
                 onFailure(errorCode, message)

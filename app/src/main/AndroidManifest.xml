@@ -21,6 +21,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        android:name=".GlobalApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
@@ -30,7 +31,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.And"
-        tools:targetApi="34">
+        >
 
         <activity
             android:name=".SplashActivity"
@@ -90,9 +91,13 @@
 
                 <data
                     android:host="oauth"
-                    android:scheme="kakao821b68e0219f434c6da893e99d4c4d60" />
+                    android:scheme="${Kakao_Redirect_URI}" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="Kakao_API_KEY" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

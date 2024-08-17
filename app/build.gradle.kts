@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -6,6 +9,15 @@ plugins {
     id("org.jetbrains.kotlin.kapt")
     id("com.google.devtools.ksp")
 }
+
+val properties = Properties().apply {
+    load(FileInputStream("${rootDir}/local.properties"))
+}
+
+val kakaoApiKey = properties["kakaoLogin_api_key"] ?: ""
+val kakaoRedirectUri = properties["kakaoLogin_Redirect_Uri"] ?: ""
+val naverClientId = properties["naverLogin_Client_Id"] ?: ""
+val naverClientSecret = properties["naverLogin_Client_Secret"] ?: ""
 
 android {
     namespace = "com.and"
@@ -19,6 +31,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders["Kakao_Redirect_URI"] = kakaoRedirectUri as String
+        manifestPlaceholders["Kakao_API_KEY"]  = kakaoApiKey as String
+        buildConfigField("String", "Kakao_API_KEY", kakaoApiKey)
+        buildConfigField("String", "Naver_Client_Id", naverClientId.toString())
+        buildConfigField("String", "Naver_Client_Secret", naverClientSecret.toString())
     }
 
     buildTypes {
@@ -43,6 +61,7 @@ android {
         //noinspection DataBindingWithoutKapt
         dataBinding = true // 데이터 바인딩 활성화
         viewBinding = true
+        buildConfig = true
     }
 
 }

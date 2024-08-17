@@ -39,7 +39,7 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val document = Jsoup.connect("https://www.druginfo.co.kr/p/contra-product-search/").get()
-                val productNames = document.select("a.contra-link").mapNotNull {
+                document.select("a.contra-link").mapNotNull {
                     it.parent()?.parent()?.select("a")?.firstOrNull()?.text()
                 }
             } catch (e: Exception) {

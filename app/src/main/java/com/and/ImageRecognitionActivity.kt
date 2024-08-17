@@ -65,7 +65,7 @@ class ImageRecognitionActivity : AppCompatActivity() {
         }
 
         cropImageLauncher = registerForActivityResult(CropImageContract()) { result ->
-            result?.uriContent?.let { uri -> performTextRecognition(uri) }
+            result.uriContent?.let { uri -> performTextRecognition(uri) }
         }
     }
 
