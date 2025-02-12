@@ -11,3 +11,15 @@
 ## 개발 언어 
    <img src="https://img.shields.io/badge/kotlin-7F52FF?style=flat&logo=kotlin&logoColor=white"/>	
 
+## 기술 스택
+   - Firebase - 데이터 베이스 및 사용자 인증
+   - Retrofit - 복용 금지 알약에 대한 정보 호출
+   - AlarmManager - 알약 알람
+   - Room - 알약 알람 설정을 저장
+   - Coroutine - 비동기 처리
+
+## 인원
+   - 안드로이드 개발자 3명
+
+## 기간
+   - 2024-03-01 ~ 2024-6-14
