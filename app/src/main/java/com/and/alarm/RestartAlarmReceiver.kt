@@ -20,10 +20,10 @@ class RestartAlarmReceiver: BroadcastReceiver() {
                 val alarms = alarmDao.getAlarmsList()
                 alarms.let {
                     for (i in alarms.indices) {
-                        val code = alarms[i].code
+                        val alarmCode = alarms[i].alarmCode
                         val time = alarms[i].time
                         val week = alarms[i].week
-                        functions.callAlarm(time, code, week.toTypedArray())
+                        functions.callAlarm(time, alarmCode, week.toTypedArray())
                     }
                 }
             }

@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.and.databinding.RemovedetaillistItemBinding
 
 class SelectDetailListAdapter(private val detailList: List<String>): RecyclerView.Adapter<SelectDetailListAdapter.RemoveDetailListViewHolder>() {
-
     private val selectedItems = mutableListOf<String>()
 
     fun interface OnItemClickListener {
@@ -14,6 +13,7 @@ class SelectDetailListAdapter(private val detailList: List<String>): RecyclerVie
     }
 
     var onItemClickListener: OnItemClickListener? = null
+
     inner class RemoveDetailListViewHolder(private val binding: RemovedetaillistItemBinding): RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener {

@@ -124,7 +124,7 @@ class CalendarFragment : Fragment() {
             TimeLineCalendar.apply {
                 selectedDate = selectedDay
                 setWeekDayFormatter(ArrayWeekDayFormatter(resources.getTextArray(R.array.custom_weekdays)))
-                state().edit().setMaximumDate(CalendarDay.today()).commit() // 최대 날짜 설정
+                state().edit().setMaximumDate(CalendarDay.today()).setMinimumDate(CalendarDay.from(2024, 1, 1)).commit() // 최대 날짜 설정
 
                 addDecorators(
                     dayDecorator,
@@ -150,7 +150,7 @@ class CalendarFragment : Fragment() {
                     val adapter = TimeLineRecyclerview.adapter as TimeLineListAdapter
                     TimeLineCalendar.removeDecorators()
                     TimeLineCalendar.invalidateDecorators() // 데코 초기화
-                    if (date.month == CalendarDay.today().month) {
+                    if (date.month == CalendarDay.today().month && date.year == CalendarDay.today().year) {
                         TimeLineCalendar.selectedDate =
                             CalendarDay.today() // 현재 달로 바꿀 때 마다 현재 날짜 표시
                         timeLineOfToday = userDataViewModel.getTimeLine(today)
