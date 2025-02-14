@@ -55,6 +55,8 @@ class AlarmReceiver: BroadcastReceiver() {
 
         val requestCode = intent?.extras!!.getInt("alarm_rqCode")
 
+        Log.d("savepoint", requestCode.toString())
+
         val resultIntent = Intent(context, CheckAlarmActivity::class.java).apply {
             this.putExtra("alarmCode", requestCode)
             this.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -68,11 +70,16 @@ class AlarmReceiver: BroadcastReceiver() {
                 PendingIntent.FLAG_IMMUTABLE
             ) //Activity를 시작하는 인텐트 생성
 
-        val notification = builder.setSmallIcon(R.mipmap.ic_launcher).setContentTitle("And")
-            .setDefaults(NotificationCompat.DEFAULT_ALL).setContentText("알약 먹을 시간 입니다!")
-            .setContentIntent(pendingIntent).setAutoCancel(true).setOngoing(false).setPriority(
-                PRIORITY_DEFAULT
-            ).setVisibility(NotificationCompat.VISIBILITY_PUBLIC).build()
+        val notification = builder.setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("And")
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setContentText("알약 먹을 시간 입니다!")
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setOngoing(false)
+            .setPriority(PRIORITY_DEFAULT)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .build()
 
         val notificationId = (System.currentTimeMillis()/1000).toInt()
         manager.notify(requestCode.toString(), notificationId, notification)
