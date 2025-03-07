@@ -1,5 +1,6 @@
 package com.and
 
+import android.util.Log
 import com.google.gson.JsonParser
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -69,7 +70,7 @@ class WarningCrawling(private val recognizedTexts: MutableList<String>) {
             productList.forEachIndexed { index, productName ->
                 jobs += async {
                     try {
-                        for (page in 1..3) {
+                        for (page in 1..8) {
                             val response = service.getUsjntTabooInfoList(
                                 serviceKey = apiKey,
                                 pageNo = page,
@@ -108,8 +109,10 @@ class WarningCrawling(private val recognizedTexts: MutableList<String>) {
             val items = bodyObject.getAsJsonArray("items")
 
             val productNames = mutableListOf<String>()
-            if (items == null)
+            if (items == null) {
                 return
+            }
+
             
             for (item in items) {
                 val mainIngr = item.asJsonObject.get("MIXTURE_ITEM_NAME").asString
