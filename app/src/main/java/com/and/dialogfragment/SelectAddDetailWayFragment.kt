@@ -93,12 +93,12 @@ class SelectAddDetailWayFragment : DialogFragment() {
                             val warningList = mutableListOf<String>()
 
                             userDataViewModel.drugInfos.value?.forEach { category ->
-                                category.details.forEachIndexed { _, drugName ->
-                                    responseList.forEachIndexed { responseIndex, responseDrugList ->
+                                category.details.forEach { drugName ->
+                                    responseList.forEach { (productName, responseDrugList) ->
                                         responseDrugList.forEach { responseDrug ->
                                             if (responseDrug.contains(drugName)) {
-                                                addList.remove(productList[responseIndex])
-                                                val warning = "$drugName <- 동시 복용 금지 -> ${productList[responseIndex]}"
+                                                addList.remove(productName)
+                                                val warning = "$drugName <- 동시 복용 금지 -> $productName"
                                                 warningList.add(warning)
                                             }
                                         }

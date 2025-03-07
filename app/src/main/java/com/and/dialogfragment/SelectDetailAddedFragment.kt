@@ -56,9 +56,9 @@ class SelectDetailAddedFragment : DialogFragment() {
 
                     val warningCrawling = WarningCrawling(selectList)
                     warningCrawling.onSuccessListener = WarningCrawling.OnSuccessListener { success, productList, responseList ->
-                            loadingDialogFragment.dismiss()
+                        loadingDialogFragment.dismiss()
 
-                            if (!success) {
+                        if (!success) {
                                 return@OnSuccessListener
                             }
 
@@ -70,13 +70,12 @@ class SelectDetailAddedFragment : DialogFragment() {
                             val warningList = mutableListOf<String>()
 
                             userDataViewModel.drugInfos.value?.forEach { category ->
-                                category.details.forEachIndexed { _, drugName ->
-                                    responseList.forEachIndexed { responseIndex, responseDrugList ->
+                                category.details.forEach { drugName ->
+                                    responseList.forEach { (productName, responseDrugList) ->
                                         responseDrugList.forEach { responseDrug ->
                                             if (responseDrug.contains(drugName)) {
-                                                addList.remove(productList[responseIndex])
-                                                val warning =
-                                                    "$drugName <- 동시 복용 금지 -> ${productList[responseIndex]}"
+                                                addList.remove(productName)
+                                                val warning = "$drugName <- 동시 복용 금지 -> $productName"
                                                 warningList.add(warning)
                                             }
                                         }
@@ -84,24 +83,24 @@ class SelectDetailAddedFragment : DialogFragment() {
                                 }
                             }
 
-                            userDataViewModel.addWarningInfo(warningList)
-                            userDataViewModel.addDetail(selectedCategory, addList)
+                        userDataViewModel.addWarningInfo(warningList)
+                        userDataViewModel.addDetail(selectedCategory, addList)
 
-                            val builder = AlertDialog.Builder(requireContext())
-                            builder.setTitle("우측 위의 경고 버튼을 클릭 하여\n복용 금지 예상 알약 리스트를 꼭 확인해주세요!")
-                            builder.setPositiveButton("네", null)
-                            builder.setCancelable(false)
-                            builder.show()
 
-                            dismiss()
-                        }
-
+                        val builder = AlertDialog.Builder(requireContext())
+                        builder.setTitle("우측 위의 경고 버튼을 클릭 하여\n복용 금지 예상 알약 리스트를 꼭 확인해주세요!")
+                        builder.setPositiveButton("네", null)
+                        builder.setCancelable(false)
+                        builder.show()
+                        dismiss()
+                    }
                     warningCrawling.getWarningDrug()
                 }  catch (e: Exception) {
                     return@setOnClickListener
                 }
             }
         }
+
         this.dialog?.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         this.dialog?.window!!.setGravity(Gravity.BOTTOM)
         this.dialog?.window!!.attributes.y = 40
