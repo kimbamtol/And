@@ -18,6 +18,7 @@ val kakaoApiKey = properties["kakaoLogin_api_key"] ?: ""
 val kakaoRedirectUri = properties["kakaoLogin_Redirect_Uri"] ?: ""
 val naverClientId = properties["naverLogin_Client_Id"] ?: ""
 val naverClientSecret = properties["naverLogin_Client_Secret"] ?: ""
+val dataPortalApiKey = properties["dataPortal_api_key"] ?: ""
 
 android {
     namespace = "com.and"
@@ -37,6 +38,7 @@ android {
         buildConfigField("String", "Kakao_API_KEY", kakaoApiKey)
         buildConfigField("String", "Naver_Client_Id", naverClientId.toString())
         buildConfigField("String", "Naver_Client_Secret", naverClientSecret.toString())
+        buildConfigField("String", "DataPortal_API_KEY", dataPortalApiKey.toString())
     }
 
     buildTypes {

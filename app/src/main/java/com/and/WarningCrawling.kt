@@ -1,6 +1,5 @@
 package com.and
 
-import android.util.Log
 import com.google.gson.JsonParser
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -8,9 +7,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -20,6 +20,8 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 class WarningCrawling(private val recognizedTexts: MutableList<String>) {
+    private val mutex = Mutex()
+
     interface PublicDataService {
         @GET("/1471000/DURPrdlstInfoService03/getUsjntTabooInfoList03")
         fun getUsjntTabooInfoList(
@@ -36,7 +38,7 @@ class WarningCrawling(private val recognizedTexts: MutableList<String>) {
         fun onSuccessGetData(success: Boolean, productList: MutableList<String>, responseList: MutableSet<MutableList<String>>)
     }
 
-    private val apiKey = "MVyZ7I0PmLzGvOmdu+dRPluZEK1tvBAagt70/uZZD5qbYD6nmJWeAmQfXq3Uuz7mMxGxfV35s4Ox7AiE0bPoQA=="
+    private val apiKey = BuildConfig.DataPortal_API_KEY
     private val productList: MutableList<String> = mutableListOf()
     private val responseList: MutableSet<MutableList<String>> = mutableSetOf()
     private var retrofit: Retrofit
@@ -99,7 +101,7 @@ class WarningCrawling(private val recognizedTexts: MutableList<String>) {
         }
     }
 
-    private fun parseAndAddProductNames(responseBody: String?, index: Int) {
+    private suspend fun parseAndAddProductNames(responseBody: String?, index: Int) {
         responseBody?.let {
             val jsonObject = JsonParser.parseString(responseBody).asJsonObject
             val bodyObject = jsonObject.getAsJsonObject("body")
@@ -114,8 +116,7 @@ class WarningCrawling(private val recognizedTexts: MutableList<String>) {
                 productNames.add(mainIngr)
             }
 
-            synchronized(responseList) {
-                // Add parsed product names to the corresponding index in responseList safely
+            mutex.withLock {
                 if (index < responseList.size) {
                     responseList.elementAtOrElse(index) { mutableListOf() }.addAll(productNames.distinct())
                 } else {
