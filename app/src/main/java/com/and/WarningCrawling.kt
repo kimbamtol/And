@@ -65,7 +65,7 @@ class WarningCrawling(private val recognizedTexts: MutableList<String>) {
         CoroutineScope(Dispatchers.IO + parentJob).launch {
             productList.forEach { productName ->
                 responseList[productName] = mutableListOf()
-                jobs += async {
+                jobs += launch {
                     try {
                         for (page in 1..8) {
                             val response = service.getUsjntTabooInfoList(
