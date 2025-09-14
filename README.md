@@ -53,8 +53,22 @@
   - naverLogin_Client_Secret=YOUR_NAVER_CLIENT_SECRET
   - dataPortal_api_key=YOUR_DATA_PORTAL_API_KEY
   <br><br/>
+  
   ## 📊 프로젝트 정보
   - 개발 기간: 2024년 3월 ~ 2024년 6월
   - 개발 인원:
      - 안드로이드 개발자 4명
+  <br><br/>
   
+  ## 📺 구현 화면
+  ### - 알약 관리 화면 및 텍스트 추출 화면  
+  <img width="309" height="603" alt="Image" src="https://github.com/user-attachments/assets/30a28623-d39c-4dd9-9776-26792701b51e" />
+  <img width="310" height="603" alt="Image" src="https://github.com/user-attachments/assets/25cb916a-77c7-48ab-b533-8ca7b708bb5a" />
+  
+  ### - 병용 금지 경고 화면 및 알람 정보 화면  
+  <img width="310" height="603" alt="Image" src="https://github.com/user-attachments/assets/4e37d1bd-d38e-40fe-aad2-abed1fa0eb64" />
+  <img width="310" height="604" alt="Image" src="https://github.com/user-attachments/assets/b87c2485-d303-46a5-a18e-74215143f5dd" />
+  
+  ### - 복용 체크 화면(알람) 및 복용 정보 달력 화면   
+  <img width="310" height="603" alt="Image" src="https://github.com/user-attachments/assets/8444b380-0c4b-4bad-ad63-1ce31d53792d" />
+  <img width="309" height="603" alt="Image" src="https://github.com/user-attachments/assets/2696bd30-e69c-4b98-8266-b33242178b69" />
